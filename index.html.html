@@ -1,0 +1,2420 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ලිපි යොමු පොත</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+Sinhala:wght@500;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDEAE0; --paper-card:#FFFFFF; --ink:#132233; --ink-2:#1B3040; --ink-soft:#3E5A66;
+    --brass:#A9793A; --brass-light:#C79A54; --brass-soft:#E7CD90; --stamp-red:#93302F;
+    --line:#DCD7C8; --text:#1B2027; --muted:#6B7280; --radius:12px; --minute-bg:#F6EFDD;
+    --shadow-sm:0 1px 2px rgba(19,34,51,.06);
+    --shadow-md:0 10px 30px -12px rgba(19,34,51,.22);
+    --shadow-lg:0 24px 60px -18px rgba(19,34,51,.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 100% -10%, rgba(169,121,58,0.05), transparent 60%),
+      var(--paper);
+    color:var(--text); font-family:'Noto Sans Sinhala','Inter',sans-serif; min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{ display:flex; min-height:100vh; }
+
+  /* ---------- Seal emblem (signature element) ---------- */
+  .seal{
+    width:52px; height:52px; border-radius:50%; flex-shrink:0;
+    background:#fff;
+    border:2px solid var(--brass-soft);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,0.5), 0 4px 14px rgba(0,0,0,0.25);
+    position:relative; margin:0 auto 14px auto;
+  }
+  .seal img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+  .seal.seal-sm{ width:34px; height:34px; margin:0; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:264px; flex-shrink:0;
+    background: linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+    color:#EDEDE4; padding:24px 0; display:flex; flex-direction:column;
+    box-shadow: 4px 0 24px -8px rgba(0,0,0,0.35);
+    position:relative; z-index:2;
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px;
+    padding:0 20px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.10); margin-bottom:12px;
+  }
+  .brand .mark{ font-family:'Noto Serif Sinhala',serif; font-size:18px; font-weight:700; line-height:1.25; }
+  .brand .sub{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--brass-soft); letter-spacing:1.6px; text-transform:uppercase; margin-top:3px; }
+  .session-tag{ padding:12px 20px; font-size:12px; color:#B7C4BE; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:8px; }
+  .session-tag b{ color:#fff; font-weight:700; }
+  .logout-link{ color:var(--brass-soft); cursor:pointer; text-decoration:none; font-size:11.5px; border-bottom:1px dotted rgba(223,197,147,0.5); }
+  .logout-link:hover{ color:#fff; }
+  .new-btn{
+    margin:8px 16px 18px 16px;
+    background:linear-gradient(180deg, var(--brass-light), var(--brass));
+    color:#241705; border:none; padding:12px 14px; border-radius:9px; font-weight:700; font-size:14.5px;
+    cursor:pointer; font-family:inherit; letter-spacing:0.2px;
+    box-shadow:0 6px 16px -4px rgba(169,121,58,0.55);
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  }
+  .new-btn:hover{ transform:translateY(-1.5px); box-shadow:0 10px 22px -4px rgba(169,121,58,0.65); filter:brightness(1.03); }
+  .new-btn:active{ transform:translateY(0); }
+  .nav-label{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.8px; color:#7C8F8C; text-transform:uppercase; padding:6px 20px 8px 20px; }
+  .dept-list{ flex:1; overflow-y:auto; padding:0 12px; }
+  .dept-item{
+    display:flex; align-items:center; justify-content:space-between; padding:10px 12px;
+    border-radius:8px; cursor:pointer; font-size:13.5px; margin-bottom:3px; color:#C9D2CD;
+    border-left:3px solid transparent; transition:background .12s ease, color .12s ease, border-color .12s ease;
+  }
+  .dept-item:hover{ background:rgba(255,255,255,0.05); color:#fff; }
+  .dept-item.active{
+    background:linear-gradient(90deg, rgba(169,121,58,0.22), rgba(169,121,58,0.06));
+    color:#fff; font-weight:600; border-left-color:var(--brass-light);
+  }
+  .badge{
+    background:var(--stamp-red); color:#fff; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    padding:2px 7px; border-radius:20px; min-width:18px; text-align:center; font-weight:600;
+  }
+  .badge.pending{ background:var(--brass-light); color:#241705; }
+  .add-dept{
+    margin:12px 16px 6px 16px; background:transparent; border:1px dashed rgba(255,255,255,0.22);
+    color:#A9B4AF; padding:9px; border-radius:8px; cursor:pointer; font-size:12px; font-family:inherit;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .add-dept:hover{ border-color:var(--brass-soft); color:var(--brass-soft); }
+  .manage-btn{
+    margin:6px 16px 16px 16px; background:transparent; border:1px solid rgba(255,255,255,0.12);
+    color:#A9B4AF; padding:9px; border-radius:8px; cursor:pointer; font-size:12px; font-family:inherit;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .manage-btn:hover{ border-color:var(--brass-soft); color:var(--brass-soft); }
+
+  /* ---------- Main ---------- */
+  .main{ flex:1; padding:40px 44px; max-width:1000px; }
+  .page-title{ font-family:'Noto Serif Sinhala',serif; font-size:28px; font-weight:700; color:var(--ink); margin:0 0 3px 0; letter-spacing:0.1px; }
+  .page-sub{ color:var(--muted); font-size:13.5px; margin-bottom:30px; }
+  .empty{ border:1.5px dashed var(--line); border-radius:var(--radius); padding:56px 20px; text-align:center; color:var(--muted); font-size:14px; background:rgba(255,255,255,0.4); }
+
+  .letter-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:17px 20px; margin-bottom:13px; display:flex; gap:16px; align-items:flex-start;
+    cursor:pointer; position:relative; box-shadow:var(--shadow-sm);
+    transition:box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+  }
+  .letter-card:hover{ box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:#CFC8B2; }
+  .letter-card.unread{ border-left:4px solid var(--stamp-red); }
+  .letter-card.pending{ border-left:4px solid var(--brass); }
+  .thumb{
+    width:58px;height:58px;border-radius:8px;background:var(--paper);
+    display:flex;align-items:center;justify-content:center; flex-shrink:0;overflow:hidden;border:1px solid var(--line);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.4);
+  }
+  .thumb img{ width:100%;height:100%;object-fit:cover; }
+  .thumb .pdf-icon{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); font-weight:700;}
+  .preview-eye{
+    position:absolute; bottom:-6px; right:-6px; width:22px; height:22px; border-radius:50%;
+    background:var(--ink); color:#fff; border:2px solid var(--paper-card); font-size:11px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;
+    box-shadow:0 2px 6px rgba(0,0,0,0.25); transition:transform .12s ease, background .12s ease;
+  }
+  .preview-eye:hover{ background:var(--brass); color:#1B1300; transform:scale(1.1); }
+  .letter-info{ flex:1; min-width:0; }
+  .letter-subject{ font-weight:700; font-size:15px; color:var(--text); margin-bottom:4px; letter-spacing:0.1px; }
+  .letter-meta{ font-size:12.5px; color:var(--muted); }
+  .letter-meta span{ margin-right:14px; }
+  .dept-tag{ display:inline-block; margin-top:7px; margin-right:6px; font-size:11px; background:rgba(19,34,51,0.07); color:var(--ink-soft); padding:3px 10px; border-radius:20px; font-weight:600; }
+  .officer-tag{ display:inline-block; margin-top:7px; font-size:11px; background:rgba(169,121,58,0.16); color:#7A5420; padding:3px 10px; border-radius:20px; font-weight:600; }
+  .status-tag{ display:inline-block; margin-top:7px; font-size:11px; padding:3px 10px; border-radius:20px; font-weight:600; }
+  .status-tag.pending{ background:rgba(169,121,58,0.18); color:#7A5420; }
+  .status-tag.minuted{ background:rgba(19,34,51,0.08); color:var(--ink-soft); }
+  .stamp{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--stamp-red); border:1.5px solid var(--stamp-red);
+    border-radius:6px; padding:6px 9px; transform:rotate(-4deg); text-align:center; line-height:1.35; flex-shrink:0; opacity:0.82;
+    box-shadow:0 1px 3px rgba(147,48,47,0.15);
+  }
+
+  /* ---------- Overlays / Modals ---------- */
+  .overlay{ position:fixed; inset:0; background:rgba(10,17,24,0.6); backdrop-filter:blur(2px); display:none; align-items:center; justify-content:center; z-index:50; padding:20px; }
+  .overlay.show{ display:flex; animation:fadeIn .15s ease; }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+  .modal{
+    background:var(--paper-card); border-radius:16px; width:100%; max-width:560px;
+    max-height:88vh; overflow-y:auto; padding:28px 30px; box-shadow:var(--shadow-lg);
+    animation:riseIn .18s ease;
+  }
+  @keyframes riseIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .modal h2{ font-family:'Noto Serif Sinhala',serif; font-size:21px; margin:0 0 18px 0; color:var(--ink); }
+  label{ display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin:14px 0 6px 0; letter-spacing:0.2px; text-transform:uppercase; }
+  input[type=text], input[type=password], input[type=date], select, textarea{
+    width:100%; padding:11px 12px; border-radius:8px; border:1.5px solid var(--line);
+    font-family:inherit; font-size:14px; background:#fff; color:var(--text);
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--brass); box-shadow:0 0 0 3px rgba(169,121,58,0.15); }
+  textarea{ resize:vertical; min-height:60px; }
+  .file-drop{
+    border:1.5px dashed var(--line); border-radius:10px; padding:18px; text-align:center; font-size:13px; color:var(--muted); margin-top:6px; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .file-drop:hover{ border-color:var(--brass-soft); background:rgba(169,121,58,0.04); }
+  .file-drop.has-file{ border-color:var(--brass); color:var(--ink); background:#FBF6EC; }
+  .preview-img{ max-width:100%; max-height:180px; border-radius:8px; margin-top:8px; box-shadow:var(--shadow-sm); }
+  .modal-actions{ display:flex; gap:10px; margin-top:24px; justify-content:flex-end; flex-wrap:wrap; }
+  .btn{ padding:11px 20px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; transition:transform .12s ease, box-shadow .12s ease, filter .12s ease; }
+  .btn-primary{ background:linear-gradient(180deg, var(--brass-light), var(--brass)); color:#241705; box-shadow:0 4px 12px -3px rgba(169,121,58,0.5); }
+  .btn-primary:hover{ transform:translateY(-1px); filter:brightness(1.04); }
+  .btn-ghost{ background:transparent; color:var(--muted); }
+  .btn-ghost:hover{ color:var(--text); background:rgba(19,34,51,0.05); }
+  .btn-track:hover{ background:var(--minute-bg); border-color:var(--brass); transform:translateY(-1px); }
+  .ref-preview{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--stamp-red); margin-top:4px; }
+  .detail-file{ margin-top:16px; border:1px solid var(--line); border-radius:10px; overflow:hidden; box-shadow:var(--shadow-sm); }
+  .detail-file img{ width:100%; display:block; }
+  .detail-file iframe{ width:100%; height:420px; border:none; }
+  .pdf-link{ display:block; padding:14px; text-align:center; color:var(--ink-soft); font-weight:600; background:var(--paper); }
+  .loading-note{ font-size:12px; color:var(--muted); margin-top:10px; }
+  .minute-box{ background:var(--minute-bg); border:1px solid var(--brass-soft); border-radius:10px; padding:14px 16px; margin-top:16px; box-shadow:inset 0 1px 2px rgba(169,121,58,0.08); }
+  .minute-box .mtitle{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1.4px; text-transform:uppercase; color:#7A5420; margin-bottom:7px; }
+  .minute-box .mline{ font-size:13.5px; margin-bottom:4px; }
+
+  /* ---------- Login screen ---------- */
+  .login-wrap{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(700px 500px at 50% 0%, rgba(169,121,58,0.18), transparent 65%),
+      linear-gradient(180deg, var(--ink) 0%, #0D1822 100%);
+    padding:20px;
+  }
+  .login-card{
+    background:var(--paper-card); border-radius:18px; padding:38px 34px; width:100%; max-width:420px;
+    box-shadow:var(--shadow-lg); text-align:center;
+  }
+  .login-card h1{ font-family:'Noto Serif Sinhala',serif; font-size:23px; color:var(--ink); margin:0 0 4px 0; }
+  .login-card .sub{ font-size:12.5px; color:var(--muted); margin-bottom:24px; }
+  .login-card label{ text-align:left; }
+  .role-tabs{ display:flex; gap:6px; margin-bottom:20px; background:var(--paper); padding:4px; border-radius:10px; }
+  .role-tab{ flex:1; text-align:center; padding:9px 2px; border-radius:7px; cursor:pointer; font-size:10.5px; font-weight:700; color:var(--muted); transition:background .15s ease, color .15s ease; line-height:1.3; }
+  .role-tab.active{ background:var(--ink); color:#fff; box-shadow:var(--shadow-sm); }
+  .login-error{ color:var(--stamp-red); font-size:12.5px; margin-top:10px; display:none; font-weight:600; }
+  .note-small{ font-size:11.5px; color:var(--muted); margin-top:18px; line-height:1.55; text-align:left; }
+  .pin-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .pin-row .code{ font-family:'IBM Plex Mono',monospace; color:var(--stamp-red); font-weight:600; }
+  .pin-row .reset-link{ color:var(--brass); cursor:pointer; font-size:12px; font-weight:700; }
+  .pin-row .reset-link:hover{ color:var(--ink); }
+  .loading-spinner{ text-align:center; padding:44px; color:var(--muted); font-size:13px; }
+  .track-card{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:13px 15px; margin-top:11px; box-shadow:var(--shadow-sm); }
+  .track-card .tsubject{ font-weight:700; font-size:14px; margin-bottom:5px; }
+  .track-status{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; padding:5px 11px; border-radius:20px; margin-top:7px; }
+  .track-status.pending{ background:rgba(169,121,58,0.18); color:#7A5420; }
+  .track-status.progress{ background:rgba(19,34,51,0.08); color:var(--ink-soft); }
+  .track-status.done{ background:rgba(46,122,74,0.14); color:#256238; }
+  .steps{ display:flex; flex-direction:column; margin-top:14px; text-align:left; }
+  .step{ position:relative; display:flex; align-items:flex-start; gap:12px; padding-bottom:22px; }
+  .step:last-child{ padding-bottom:0; }
+  .step-dot{ width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; z-index:1; background:#E3E1D6; color:#8b8b80; }
+  .step.done .step-dot{ background:#3F8C58; color:#fff; }
+  .step.current .step-dot{ background:var(--brass); color:#241705; box-shadow:0 0 0 4px rgba(169,121,58,0.22); animation:pulseDot 1.8s ease-in-out infinite; }
+  @keyframes pulseDot{ 0%,100%{ box-shadow:0 0 0 4px rgba(169,121,58,0.22);} 50%{ box-shadow:0 0 0 7px rgba(169,121,58,0.12);} }
+  .step-line{ position:absolute; left:10px; top:22px; width:2px; height:calc(100% - 22px); background:#E3E1D6; }
+  .step-line.line-done{ background:#3F8C58; }
+  .step-label{ font-size:12.5px; padding-top:2px; color:var(--text); font-weight:500; }
+  .step.current .step-label{ font-weight:700; color:var(--brass); }
+  .step.todo .step-label{ color:var(--muted); }
+  .search-box{ margin-bottom:16px; }
+  .priority-tag{ display:inline-block; margin-top:7px; margin-right:6px; font-size:11px; background:rgba(162,59,63,0.14); color:#7a2426; padding:3px 10px; border-radius:20px; font-weight:700; }
+  .overdue-tag{ display:inline-block; margin-top:7px; font-size:11px; background:rgba(162,59,63,0.14); color:#7a2426; padding:3px 10px; border-radius:20px; font-weight:700; }
+  .stat-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+  .stat-card{ background:var(--paper-card); border:1px solid var(--line); border-radius:12px; padding:16px; box-shadow:var(--shadow-sm); }
+  .stat-num{ font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; color:var(--ink); }
+  .stat-label{ font-size:11.5px; color:var(--muted); margin-top:4px; }
+  .bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .bar-label{ width:130px; flex-shrink:0; font-size:12.5px; color:var(--text); }
+  .bar-track{ flex:1; height:14px; background:var(--paper); border-radius:8px; overflow:hidden; }
+  .bar-fill{ height:100%; background:linear-gradient(90deg, var(--brass-light), var(--brass)); }
+  .bar-count{ width:26px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); }
+  .attach-thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .attach-thumbs img, .attach-thumbs iframe{ width:90px; height:90px; object-fit:cover; border-radius:6px; border:1px solid var(--line); cursor:pointer; }
+  .checkbox-label{ display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin-top:16px; }
+  .checkbox-label input{ width:auto; margin:0; }
+  .fwd-row{ display:flex; gap:8px; align-items:center; margin-top:8px; }
+  .fwd-row select{ flex:1.1; }
+  .fwd-row input{ flex:1; margin:0; }
+  .fwd-row .fwd-remove{ background:none; border:none; color:var(--stamp-red); cursor:pointer; font-size:18px; padding:0 4px; flex-shrink:0; }
+  .forwarded-tag{ display:inline-block; margin-top:7px; font-size:11px; background:rgba(19,34,51,0.06); color:var(--ink-soft); padding:3px 10px; border-radius:20px; font-weight:600; font-style:italic; }
+
+  @media (max-width:760px){
+    .app{ flex-direction:column; } .sidebar{ width:100%; }
+    .dept-list{ display:flex; overflow-x:auto; padding:4px 12px 12px 12px; }
+    .dept-item{ flex-shrink:0; margin-right:6px; } .main{ padding:22px; }
+  }
+</style>
+</head>
+<body>
+
+<button id="langToggle" onclick="toggleLang()" style="position:fixed; top:14px; right:14px; z-index:100; background:var(--ink); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:7px 14px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; font-family:'IBM Plex Mono',monospace; letter-spacing:0.5px; box-shadow:var(--shadow-sm);">EN</button>
+
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <div class="seal"><img class="org-seal-img" alt="Seal"></div>
+    <div id="orgNameDisplay" style="font-family:'Noto Serif Sinhala',serif; font-size:13.5px; font-weight:700; color:var(--brass); letter-spacing:0.3px; margin-bottom:2px;"></div>
+    <h1 data-i18n="appTitle">ලිපි යොමු පොත</h1>
+    <div class="sub" data-i18n="chooseRole">ඔබ කවුරුන්ද කියා තෝරන්න</div>
+    <div class="role-tabs">
+      <div class="role-tab active" id="tabDispatch" onclick="setLoginRole('dispatch')" data-i18n="roleDispatch">ලිපි බෙදාහරින නිලධාරී</div>
+      <div class="role-tab" id="tabSecretary" onclick="setLoginRole('secretary')" data-i18n="roleSecretary">ලේකම්</div>
+      <div class="role-tab" id="tabDept" onclick="setLoginRole('dept')" data-i18n="roleDept">අංශයේ නිලධාරී</div>
+      <div class="role-tab" id="tabChairman" onclick="setLoginRole('chairman')" data-i18n="roleChairman">සභාපති</div>
+    </div>
+    <div id="dispatchLogin">
+      <label data-i18n="dispatcherPinLabel">Dispatcher PIN</label>
+      <input type="password" id="dispatchPinInput" placeholder="PIN එක ඇතුළත් කරන්න" data-i18n-ph="pinPlaceholder">
+    </div>
+    <div id="secretaryLogin" style="display:none;">
+      <label data-i18n="secretaryPinLabel">ලේකම් PIN</label>
+      <input type="password" id="secretaryPinInput" placeholder="PIN එක ඇතුළත් කරන්න" data-i18n-ph="pinPlaceholder">
+    </div>
+    <div id="deptLogin" style="display:none;">
+      <label data-i18n="chooseDept">අංශය තෝරන්න</label>
+      <select id="loginDeptSelect"></select>
+      <label data-i18n="deptPinLabel">අංශයේ PIN</label>
+      <input type="password" id="deptPinInput" placeholder="PIN එක ඇතුළත් කරන්න" data-i18n-ph="pinPlaceholder">
+      <label data-i18n="officerNameLoginLabel">ඔබේ නම — විකල්ප (accountability සඳහා)</label>
+      <input type="text" id="deptOfficerNameInput">
+    </div>
+    <div id="chairmanLogin" style="display:none;">
+      <label data-i18n="chairmanPinLabel">සභාපති PIN</label>
+      <input type="password" id="chairmanPinInput" placeholder="PIN එක ඇතුළත් කරන්න" data-i18n-ph="pinPlaceholder">
+    </div>
+    <button class="btn btn-primary" style="width:100%; margin-top:18px;" onclick="doLogin()" data-i18n="loginBtn">ඇතුල් වන්න</button>
+    <div class="login-error" id="loginError" data-i18n="loginError">වැරදි PIN එකකි. නැවත උත්සාහ කරන්න.</div>
+    <div class="note-small" id="loginNote" data-i18n="loginNote">පළමු වතාවට: Dispatcher PIN <b>1111</b>, ලේකම් PIN <b>2580</b>, අංශ PIN <b>1234</b>. ලේකම් log වුණාට පස්සේ "PIN කළමනාකරණය" එකෙන් මේවා වෙනස් කරන්න.</div>
+    <div style="margin-top:18px; border-top:1px solid var(--line); padding-top:16px;">
+      <button class="btn btn-track" style="width:100%; background:var(--paper); color:var(--ink); border:1.5px solid var(--brass-soft); font-weight:700;" onclick="openTracker()" data-i18n="trackLinkText">📍 ඔබේ ලිපිය සොයන්න (Track your letter)</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="trackOverlay">
+  <div class="modal" style="max-width:420px;">
+    <h2 data-i18n="trackTitle">ලිපිය සොයන්න</h2>
+    <label style="margin-top:0;" data-i18n="trackInputLabel">යොමු අංකය හෝ දුරකථන අංකය</label>
+    <input type="text" id="trackInput" placeholder="උදා: OL-2026-0001 හෝ 0771234567" data-i18n-ph="trackPh">
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="btn btn-ghost" onclick="closeTracker()" data-i18n="closeBtn">වසන්න</button>
+      <button class="btn btn-primary" onclick="trackSearch()" data-i18n="searchBtn">සොයන්න</button>
+    </div>
+    <div id="trackResults" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<div class="overlay" id="receiptOverlay">
+  <div class="modal" style="max-width:400px; text-align:center;">
+    <img class="org-seal-img" alt="Seal" style="width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid var(--brass-soft); margin:0 auto 8px auto; display:block; box-shadow:0 3px 10px rgba(0,0,0,0.15);">
+    <div id="receiptOrgName" style="font-family:'Noto Serif Sinhala',serif; font-size:14px; font-weight:700; color:var(--brass); margin-bottom:2px;"></div>
+    <h2 style="text-align:center;" data-i18n="receiptTitle">ලිපිය ලැබුණි ✅</h2>
+    <p id="receiptDescText" style="font-size:13.5px; color:var(--muted); margin-top:-8px;" data-i18n="receiptDesc">මෙම QR code එක හෝ link එක ලිපිය ගෙනාපු පුද්ගලයාට දෙන්න. ඔවුන්ට ලිපියේ තත්ත්වය එමගින් පරීක්ෂා කළ හැක.</p>
+
+    <div id="receiptBigRef" style="display:none; background:var(--minute-bg); border:1.5px dashed var(--brass-soft); border-radius:10px; padding:18px; margin:14px 0;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:700; color:var(--stamp-red); letter-spacing:1px;" id="receiptBigRefText"></div>
+    </div>
+    <p id="receiptPreviewNote" style="display:none; font-size:12px; color:var(--muted); text-align:left; background:var(--paper); border-radius:8px; padding:10px 12px; margin-top:4px;"></p>
+
+    <div id="receiptLinkSection">
+      <div class="ref-preview" id="receiptRef" style="font-size:14px; text-align:center; margin:10px 0;"></div>
+      <img id="receiptQr" style="width:180px; height:180px; margin:8px auto; display:block; border:1px solid var(--line); border-radius:8px;">
+      <div style="display:flex; gap:8px; margin-top:14px;">
+        <input type="text" id="receiptLink" readonly style="font-size:11.5px;">
+        <button class="btn btn-ghost" style="flex-shrink:0;" onclick="copyTrackLink()" data-i18n="copyBtn">📋 Copy</button>
+      </div>
+    </div>
+    <p id="receiptPurpose" style="font-size:11.5px; color:var(--muted); text-align:left; margin-top:14px; line-height:1.5;"></p>
+
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-ghost" onclick="printReceipt()" data-i18n="printReceiptBtn">🖨️ Receipt Print කරන්න</button>
+      <button class="btn btn-primary" onclick="closeReceiptModal()" data-i18n="closeBtn">වසන්න</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="appScreen" style="display:none;">
+  <div class="sidebar">
+    <div class="brand"><div class="seal seal-sm"><img class="org-seal-img" alt="Seal"></div><div style="min-width:0;"><div class="mark" data-i18n="appTitle">ලිපි යොමු පොත</div><div class="sub" id="sidebarOrgName" style="color:var(--brass-soft); margin-top:2px;"></div><div class="sub" data-i18n="brandSub">Correspondence Register</div></div></div>
+    <div class="session-tag" id="sessionTag"></div>
+    <button class="new-btn" id="newLetterBtn" onclick="openUploadModal()" data-i18n="newLetterBtn">+ අලුත් ලිපියක්</button>
+    <div class="nav-label" id="navLabel" data-i18n="navDepts">අංශ</div>
+    <div class="dept-list" id="deptList"></div>
+    <button class="add-dept" id="addDeptBtn" onclick="addDepartment()" data-i18n="addDeptBtn">+ අංශයක් එකතු කරන්න</button>
+    <button class="manage-btn" id="managePinBtn" onclick="openPinManager()" data-i18n="managePinBtn">🔐 PIN කළමනාකරණය</button>
+    <button class="manage-btn" id="exportBtn" onclick="openExportModal()" data-i18n="exportBtn">📤 Data Export</button>
+    <button class="manage-btn" id="registerBtn" onclick="openRegisterModal()" data-i18n="registerBtn">📋 Register Print</button>
+  </div>
+  <div class="main">
+    <div class="page-title" id="pageTitle">සියලුම ලිපි</div>
+    <div class="page-sub" id="pageSub">ලැබී ඇති සියලුම ලිපි මෙහි පෙන්වයි</div>
+    <input type="text" id="searchBox" class="search-box" oninput="onSearchInput(this.value)" data-i18n-ph="searchPh" placeholder="🔍 විෂය, යවන්නා, යොමු අංකය අනුව සොයන්න...">
+    <div id="dateFilterRow" class="fwd-row" style="margin-top:-8px; margin-bottom:16px;">
+      <input type="date" id="dateFromInput" oninput="onDateFilterChange()">
+      <span style="flex-shrink:0; color:var(--muted); font-size:12px;" data-i18n="dateToLabel">සිට</span>
+      <input type="date" id="dateToInput" oninput="onDateFilterChange()">
+      <button class="fwd-remove" title="Clear" onclick="clearDateFilter()">✕</button>
+    </div>
+    <div id="letterList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="uploadOverlay">
+  <div class="modal">
+    <h2 data-i18n="uploadTitle">අලුත් ලිපියක් ඇතුළත් කරන්න</h2>
+    <label data-i18n="uploadFileLabel">ලිපිය upload කරන්න (Photo / PDF)</label>
+    <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()" data-i18n="chooseFile">📎 ලිපිය තෝරන්න (Image or PDF)</div>
+    <input type="file" id="fileInput" accept="image/*,application/pdf" style="display:none" onchange="handleFile(event)">
+    <img id="previewImg" class="preview-img" style="display:none;">
+    <div class="loading-note" id="loadingNote" style="display:none;" data-i18n="processingFile">Processing file...</div>
+    <label data-i18n="subjectLabel">විෂය (Subject)</label>
+    <input type="text" id="fSubject" placeholder="උදා: 2026 වාර්ෂික අයවැය සම්මුතිය" data-i18n-ph="subjectPh">
+    <label data-i18n="senderLabel">යවන්නා / ආයතනය (Sender)</label>
+    <input type="text" id="fSender" placeholder="උදා: දිස්ත්‍රික් ලේකම් කාර්යාලය" data-i18n-ph="senderPh">
+    <label data-i18n="phoneLabel">යවන්නාගේ දුරකථන අංකය — විකල්ප (ලිපිය track කිරීමට)</label>
+    <input type="text" id="fPhone" placeholder="උදා: 0771234567">
+    <label data-i18n="dateLabel">ලැබුණු දිනය</label>
+    <input type="date" id="fDate">
+    <label data-i18n="notesLabel">සටහන් (Notes) — විකල්ප</label>
+    <textarea id="fNotes" placeholder="අමතර විස්තර..." data-i18n-ph="notesPh"></textarea>
+    <label data-i18n="refLabel">යොමු අංකය (Reference No.)</label>
+    <input type="text" id="refPreview" style="font-family:'IBM Plex Mono',monospace; color:var(--stamp-red);">
+    <div class="note-small" style="margin-top:4px;" data-i18n="refEditNote">ස්වයංක්‍රීයව ලබා දී ඇති අංකය අවශ්‍ය නම් වෙනස් කරගත හැක.</div>
+    <label class="checkbox-label">
+      <input type="checkbox" id="fPriority">
+      <span data-i18n="priorityCheckboxLabel">🔴 මෙය හදිසි ලිපියක්</span>
+    </label>
+    <div class="note-small" data-i18n="pendingNote">මෙම ලිපිය ලේකම් වෙත "පොරොත්තු ලිපි" ලෙස යනු ඇත. අදාළ අංශය සහ නිලධාරියා තෝරා යැවීම ලේකම් තුමා විසින් සිදු කරනු ලැබේ.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeUploadModal()" data-i18n="cancelBtn">අවලංගු කරන්න</button>
+      <button class="btn btn-primary" id="submitLetterBtn" onclick="submitLetter()" data-i18n="sendLetterBtn">ලිපිය එවන්න</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="minuteOverlay">
+  <div class="modal">
+    <h2 data-i18n="minuteTitle">සටහන යොදා යොමු කරන්න (Minute)</h2>
+    <div id="minuteLetterPreview"></div>
+    <label style="margin-top:16px;" data-i18n="minuteDeptLabel">යොමු කරන අංශය</label>
+    <select id="mDept"></select>
+    <label data-i18n="officerLabel">අදාළ නිලධාරියාගේ නම</label>
+    <input type="text" id="mOfficer" placeholder="උදා: කේ. පෙරේරා මහතා" data-i18n-ph="officerPh">
+    <label data-i18n="minuteNoteLabel">ලේකම්තුමාගේ සටහන / උපදෙස්</label>
+    <textarea id="mNote" placeholder="උදා: කඩිනමින් කටයුතු කර වාර්තා කරන්න." data-i18n-ph="minuteNotePh"></textarea>
+    <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:600; margin-top:16px;">
+      <input type="checkbox" id="mNeedsChairman" checked style="width:auto; margin:0;">
+      <span data-i18n="needsChairmanLabel">මෙම ලිපියට සභාපතිතුමාගේ අවසාන අනුමැතිය අවශ්‍යයි</span>
+    </label>
+    <label class="checkbox-label">
+      <input type="checkbox" id="mPriority">
+      <span data-i18n="priorityCheckboxLabel">🔴 මෙය හදිසි ලිපියක්</span>
+    </label>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeMinuteModal()" data-i18n="cancelBtn">අවලංගු කරන්න</button>
+      <button class="btn btn-primary" onclick="submitMinute()" data-i18n="submitMinuteBtn">සටහන යොදා යවන්න</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="detailOverlay"><div class="modal" id="detailModalBody"></div></div>
+<input type="file" id="extraFileInput" accept="image/*,application/pdf" style="display:none" onchange="handleExtraFile(event)">
+
+<div class="overlay" id="forwardOverlay">
+  <div class="modal">
+    <h2 data-i18n="forwardTitle">ලිපිය ඉදිරියට යවන්න (Forward)</h2>
+    <div id="forwardLetterPreview" style="font-size:13px; color:var(--muted); margin-bottom:8px;"></div>
+    <div id="forwardTargetsList"></div>
+    <button class="add-dept" style="margin:10px 0 0 0; width:100%;" onclick="addForwardRow()" data-i18n="addForwardRowBtn">+ තවත් නිලධාරියෙක් / අංශයක් එකතු කරන්න</button>
+    <label data-i18n="forwardNoteLabel">සටහන (සියලුම ලබන්නන්ට පොදුවේ පෙන්වයි)</label>
+    <textarea id="forwardNote" placeholder="උදා: කරුණාකර පරීක්ෂා කර කටයුතු කරන්න." data-i18n-ph="forwardNotePh"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeForwardModal()" data-i18n="cancelBtn">අවලංගු කරන්න</button>
+      <button class="btn btn-primary" onclick="submitForward()" data-i18n="forwardSendBtn">ඉදිරියට යවන්න</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="quickPreviewOverlay" onclick="if(event.target===this) closeQuickPreview()">
+  <div class="modal" id="quickPreviewBody" style="max-width:720px;"></div>
+</div>
+
+<div class="overlay" id="outgoingOverlay">
+  <div class="modal">
+    <h2 data-i18n="outgoingAddTitle">පිටවන ලිපියක් ලියාපදිංචි කරන්න</h2>
+    <label style="margin-top:0;" data-i18n="outgoingRefLabel">යොමු අංකය</label>
+    <input type="text" id="ogRef">
+    <label data-i18n="subjectLabel">විෂය (Subject)</label>
+    <input type="text" id="ogSubject" data-i18n-ph="subjectPh">
+    <label data-i18n="outgoingRecipientLabel">ලබන්නා / ආයතනය</label>
+    <input type="text" id="ogRecipient" data-i18n-ph="senderPh">
+    <label data-i18n="outgoingSentViaLabel">යැවූ ක්‍රමය</label>
+    <input type="text" id="ogSentVia" placeholder="උදා: තැපෑල / අතින්">
+    <label data-i18n="dateLabel">දිනය</label>
+    <input type="date" id="ogDate">
+    <label data-i18n="replyToLabel">අදාළ ලැබුණු ලිපිය — විකල්ප (Reply to)</label>
+    <select id="ogReplyTo"></select>
+    <label data-i18n="notesLabel">සටහන් (Notes) — විකල්ප</label>
+    <textarea id="ogNotes"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeOutgoingModal()" data-i18n="cancelBtn">අවලංගු කරන්න</button>
+      <button class="btn btn-primary" onclick="submitOutgoing()" data-i18n="saveBtn">සුරකින්න</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="exportOverlay">
+  <div class="modal" style="max-width:400px;">
+    <h2 data-i18n="exportTitle">Data Export</h2>
+    <p class="note-small" style="margin-top:0;" data-i18n="exportDesc">සියලුම ලිපි (photos/PDF ඇතුළුව) file එකක් ලෙස බාගත කරගන්න. මෙය නිතිපතා backup එකක් ලෙස තබාගන්න.</p>
+    <div class="modal-actions" style="justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="exportJSON()" data-i18n="exportJsonBtn">📦 JSON (සම්පූර්ණ Backup)</button>
+      <button class="btn btn-primary" onclick="exportCSV()" style="background:#3F8C58;" data-i18n="exportCsvBtn">📊 CSV (Excel සඳහා)</button>
+    </div>
+    <div id="exportStatus" class="note-small" style="text-align:center;"></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeExportModal()" data-i18n="closeBtn">වසන්න</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="editOverlay">
+  <div class="modal">
+    <h2 data-i18n="editTitle">ලිපියේ විස්තර සංස්කරණය</h2>
+    <label style="margin-top:0;" data-i18n="subjectLabel">විෂය (Subject)</label>
+    <input type="text" id="eSubject">
+    <label data-i18n="senderLabel">යවන්නා / ආයතනය (Sender)</label>
+    <input type="text" id="eSender">
+    <label data-i18n="phoneLabel">යවන්නාගේ දුරකථන අංකය — විකල්ප</label>
+    <input type="text" id="ePhone">
+    <label data-i18n="dateLabel">ලැබුණු දිනය</label>
+    <input type="date" id="eDate">
+    <label data-i18n="notesLabel">සටහන් (Notes) — විකල්ප</label>
+    <textarea id="eNotes"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeEditModal()" data-i18n="cancelBtn">අවලංගු කරන්න</button>
+      <button class="btn btn-primary" onclick="saveEditedLetter()" data-i18n="saveBtn">සුරකින්න</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="registerOverlay">
+  <div class="modal" style="max-width:420px;">
+    <h2 data-i18n="registerTitle">Register Print</h2>
+    <p class="note-small" style="margin-top:0;" data-i18n="registerDesc">තෝරාගත් කාල පරාසය තුළ ලැබුණු සියලුම ලිපි වල ලේඛනගත register එකක් print කරගන්න.</p>
+    <label style="margin-top:0;" data-i18n="dateFromLabel">සිට දිනය</label>
+    <input type="date" id="regDateFrom">
+    <label data-i18n="dateToLabel2">දක්වා දිනය</label>
+    <input type="date" id="regDateTo">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeRegisterModal()" data-i18n="cancelBtn">අවලංගු කරන්න</button>
+      <button class="btn btn-primary" onclick="printRegister()" data-i18n="printRegisterBtn">🖨️ Print</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="overlay" id="inputOverlay">
+  <div class="modal" style="max-width:380px;">
+    <h2 id="inputModalTitle">Input</h2>
+    <input type="text" id="inputModalField" placeholder="">
+    <input type="text" id="inputModalField2" placeholder="" style="display:none; margin-top:10px;">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeInputModal()" data-i18n="cancelBtn">අවලංගු කරන්න</button>
+      <button class="btn btn-primary" onclick="confirmInputModal()" data-i18n="confirmBtn">තහවුරු කරන්න</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="confirmOverlay">
+  <div class="modal" style="max-width:380px;">
+    <h2 id="confirmModalTitle" data-i18n="confirmTitle">තහවුරු කරන්න</h2>
+    <p id="confirmModalMsg" style="font-size:14px; color:var(--text);"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeConfirmModal()" data-i18n="noBtn">නැහැ</button>
+      <button class="btn btn-primary" onclick="confirmConfirmModal()" data-i18n="yesDoBtn">ඔව්, කරන්න</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="alertOverlay">
+  <div class="modal" style="max-width:360px;">
+    <p id="alertModalMsg" style="font-size:14px; color:var(--text); margin:0 0 4px 0;"></p>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeAlertModal()" data-i18n="okBtn">හරි</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="pinOverlay">
+  <div class="modal">
+    <h2 data-i18n="pinMgmtTitle">PIN කළමනාකරණය</h2>
+    <label style="margin-top:0;" data-i18n="orgNameLabel">ආයතනයේ නම (Receipt/Letterhead)</label>
+    <div class="pin-row"><span class="code" id="orgNamePinDisplay" style="color:var(--ink-soft);"></span><span class="reset-link" onclick="changeOrgName()" data-i18n="changeBtn">වෙනස් කරන්න</span></div>
+    <label data-i18n="secretaryPinLabel2">ලේකම් PIN</label>
+    <div class="pin-row"><span class="code" id="secretaryPinDisplay"></span><span class="reset-link" onclick="changeSecretaryPin()" data-i18n="changeBtn">වෙනස් කරන්න</span></div>
+    <label data-i18n="dispatcherPinLabel2">Dispatcher PIN</label>
+    <div class="pin-row"><span class="code" id="dispatchPinDisplay"></span><span class="reset-link" onclick="changeDispatchPin()" data-i18n="changeBtn">වෙනස් කරන්න</span></div>
+    <label data-i18n="deptPinLabel2">අංශ PIN</label>
+    <div id="pinList"></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closePinManager()" data-i18n="closeBtn">වසන්න</button></div>
+  </div>
+</div>
+
+<script>
+/* ---------- Data model ----------
+   letterIndex: lightweight array kept in 'letters-index' (shared) — used for all listing/filtering.
+     { id, ref, subject, sender, date, dept, assignedOfficer, status, uploadedBy, read, createdAt, fileType, thumb }
+     'thumb' is a tiny low-res base64 preview (images only) so lists render without loading full files.
+   Full letter record kept in its OWN key 'letter:<id>' (shared):
+     { id, ref, subject, sender, date, notes, fileData, fileType, fileName, status, dept,
+       assignedOfficer, minuteNote, minutedAt, uploadedBy, read, createdAt }
+   This keeps each stored value well under the 5MB-per-key limit regardless of how many letters exist,
+   since every letter's full file lives in its own key instead of one giant combined key.
+------------------------------------ */
+
+/* ---------- Language / i18n ---------- */
+const ORG_LOGO = "data:image/jpeg;base64,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";
+let lang = 'si';
+let orgName = 'ඉබ්බාගමුව ප්‍රදේශීය සභාව';
+const T = {
+  si: {
+    appTitle:'ලිපි යොමු පොත', chooseRole:'ඔබ කවුරුන්ද කියා තෝරන්න',
+    roleDispatch:'ලිපි බෙදාහරින නිලධාරී', roleSecretary:'ලේකම්', roleDept:'අංශයේ නිලධාරී',
+    dispatcherPinLabel:'Dispatcher PIN', secretaryPinLabel:'ලේකම් PIN', chooseDept:'අංශය තෝරන්න',
+    deptPinLabel:'අංශයේ PIN', pinPlaceholder:'PIN එක ඇතුළත් කරන්න', loginBtn:'ඇතුල් වන්න',
+    roleChairman:'සභාපති', chairmanPinLabel:'සභාපති PIN',
+    chairmanNotConfigured:'සභාපති අංශයක් තවම සකසා නොමැත. ලේකම්ට "PIN කළමනාකරණය" එකෙන් අංශයක් සභාපති ලෙස සලකුණු කළ හැක.',
+    loginError:'වැරදි PIN එකකි. නැවත උත්සාහ කරන්න.',
+    loginNote:'පළමු වතාවට: Dispatcher PIN <b>1111</b>, ලේකම් PIN <b>2580</b>, අංශ PIN <b>1234</b>. ලේකම් log වුණාට පස්සේ "PIN කළමනාකරණය" එකෙන් මේවා වෙනස් කරන්න.',
+    trackLinkText:'📍 ඔබේ ලිපිය සොයන්න (Track your letter)',
+    brandSub:'Correspondence Register', newLetterBtn:'+ අලුත් ලිපියක්', navDepts:'අංශ',
+    addDeptBtn:'+ අංශයක් එකතු කරන්න', managePinBtn:'🔐 PIN කළමනාකරණය',
+    uploadTitle:'අලුත් ලිපියක් ඇතුළත් කරන්න', uploadFileLabel:'ලිපිය upload කරන්න (Photo / PDF)',
+    chooseFile:'📎 ලිපිය තෝරන්න (Image or PDF)', processingFile:'ගොනුව සකසමින්...',
+    subjectLabel:'විෂය (Subject)', subjectPh:'උදා: 2026 වාර්ෂික අයවැය සම්මුතිය',
+    senderLabel:'යවන්නා / ආයතනය (Sender)', senderPh:'උදා: දිස්ත්‍රික් ලේකම් කාර්යාලය',
+    phoneLabel:'යවන්නාගේ දුරකථන අංකය — විකල්ප (ලිපිය track කිරීමට)', dateLabel:'ලැබුණු දිනය',
+    notesLabel:'සටහන් (Notes) — විකල්ප', notesPh:'අමතර විස්තර...',
+    refLabel:'යොමු අංකය (Reference No.)', refEditNote:'ස්වයංක්‍රීයව ලබා දී ඇති අංකය අවශ්‍ය නම් වෙනස් කරගත හැක.',
+    pendingNote:'මෙම ලිපිය ලේකම් වෙත "පොරොත්තු ලිපි" ලෙස යනු ඇත. අදාළ අංශය සහ නිලධාරියා තෝරා යැවීම ලේකම් තුමා විසින් සිදු කරනු ලැබේ.',
+    cancelBtn:'අවලංගු කරන්න', sendLetterBtn:'ලිපිය එවන්න',
+    minuteTitle:'සටහන යොදා යොමු කරන්න (Minute)', minuteDeptLabel:'යොමු කරන අංශය',
+    officerLabel:'අදාළ නිලධාරියාගේ නම', officerPh:'උදා: කේ. පෙරේරා මහතා',
+    minuteNoteLabel:'ලේකම්තුමාගේ සටහන / උපදෙස්', minuteNotePh:'උදා: කඩිනමින් කටයුතු කර වාර්තා කරන්න.',
+    submitMinuteBtn:'සටහන යොදා යවන්න', confirmBtn:'තහවුරු කරන්න', confirmTitle:'තහවුරු කරන්න',
+    noBtn:'නැහැ', yesDoBtn:'ඔව්, කරන්න', okBtn:'හරි', pinMgmtTitle:'PIN කළමනාකරණය',
+    secretaryPinLabel2:'ලේකම් PIN', changeBtn:'වෙනස් කරන්න', dispatcherPinLabel2:'Dispatcher PIN',
+    deptPinLabel2:'අංශ PIN', closeBtn:'වසන්න', trackTitle:'ලිපිය සොයන්න',
+    trackInputLabel:'යොමු අංකය හෝ දුරකථන අංකය', trackPh:'උදා: OL-2026-0001 හෝ 0771234567',
+    searchBtn:'සොයන්න', receiptTitle:'ලිපිය ලැබුණි ✅',
+    receiptDesc:'මෙම QR code එක හෝ link එක ලිපිය ගෙනාපු පුද්ගලයාට දෙන්න. ඔවුන්ට ලිපියේ තත්ත්වය එමගින් පරීක්ෂා කළ හැක.',
+    copyBtn:'📋 Copy', printReceiptBtn:'🖨️ Receipt Print කරන්න',
+    logoutLink:'ලොග් අවුට් වන්න',
+    dispatchViewTitle:'ඔබ Upload කළ ලිපි', dispatchViewSub:'ලේකම් විසින් සටහන යොදා යවනු ලබන තුරු මෙහි "පොරොත්තුවේ" පෙන්වයි',
+    pendingViewTitle:'පොරොත්තු ලිපි', pendingViewSub:'සටහන යොදා අදාළ අංශයට හා නිලධාරියාට යොමු කිරීමට ඇති ලිපි',
+    allViewTitle:'සියලුම ලිපි', allViewSub:'ලැබී ඇති සියලුම ලිපි',
+    deptViewSub:'මෙම අංශයට යොමු කර ඇති ලිපි', deptOfficerSub:'ලේකම් විසින් මෙම අංශයට යොමු කර ඇති ලිපි',
+    emptyLetters:'තවම ලිපි නොමැත.', pendingAllLabel:'⏳ පොරොත්තු ලිපි', allLettersLabel:'📥 සියලුම ලිපි',
+    statusPending:'⏳ පොරොත්තුවේ', statusCompleted:'✅ අවසන්', printBtnLabel:'🖨️ Print',
+    deleteBtnLabel:'🗑 මකන්න', markCompleteBtn:'✅ කටයුතු අවසන් කළා', refPrefix:'යොමු අංකය:',
+    minuteBoxTitle:'ලේකම්තුමාගේ සටහන', minuteDeptLine:'යොමු කළ අංශය:', minuteOfficerLine:'අදාළ නිලධාරියා:',
+    minuteInstrLine:'උපදෙස්:', minuteStatusLine:'තත්ත්වය:', statusDone:'✅ කටයුතු අවසන්',
+    statusInProgress:'⏳ කටයුතු කරමින්', loadingText:'ලිපිය load වෙමින්...',
+    loadFailText:'ලිපිය load කිරීමට නොහැකි විය.', quickLoadingText:'Loading...',
+    quickLoadFailText:'Load කිරීමට නොහැකි විය.', pdfDownloadBtn:'⬇️ PDF බාගත කරන්න / විවෘත කරන්න',
+    pdfDownloadShort:'⬇️ PDF බාගත කරන්න', alreadyExistsDept:'මෙම අංශය දැනටමත් තිබේ.',
+    confirmDeleteDept:'"{name}" අංශය මකා දැමීමට විශ්වාසද?', confirmDeleteLetter:'මෙම ලිපිය මකා දැමීමට විශ්වාසද?',
+    fillSubjectSenderDate:'කරුණාකර විෂය, යවන්නා සහ දිනය පුරවන්න.', fillRef:'කරුණාකර යොමු අංකය පුරවන්න.',
+    dupRef:'මෙම යොමු අංකය දැනටමත් භාවිතා වේ. වෙනත් අංකයක් දෙන්න.', needFile:'කරුණාකර ලිපියේ photo/PDF එකක් upload කරන්න.',
+    fillDeptOfficer:'කරුණාකර අංශය සහ නිලධාරියාගේ නම පුරවන්න.', copiedMsg:'Link එක copy කළා!',
+    copyFailMsg:'Copy කිරීමට නොහැකි විය. Link එක manually select කර copy කරන්න.',
+    addDeptModalTitle:'අලුත් අංශයක් එකතු කරන්න', addDeptNamePh:'අංශයේ නම', addDeptPinPh:'PIN (උදා: 1234)',
+    changePinTitleSecretary:'අලුත් ලේකම් PIN එක', changePinTitleDispatch:'අලුත් Dispatcher PIN එක',
+    changePinTitleDept:'{name} සඳහා අලුත් PIN එක', pinFieldPh:'PIN එක',
+    trackNoInput:'යොමු අංකය හෝ දුරකථන අංකය ඇතුළත් කරන්න.',
+    trackNoMatch:'ගැලපෙන ලිපියක් හමු නොවීය. යොමු අංකය / දුරකථන අංකය නැවත පරීක්ෂා කරන්න.',
+    trackStatusPending:'⏳ ලේකම්', trackStatusDone:'✅ කටයුතු අවසන් — {dept}', trackStatusProgress:'🔄 {dept} - කටයුතු කරමින්',
+    stepReceived:'ලිපිය ලැබුණි', stepSecretaryReview:'ලේකම් සමාලෝචනය', stepDeptAction:'අංශයේ කටයුතු',
+    stepAwaitingApproval:'ලේකම්/සභාපති අනුමැතිය', stepSecretaryApprovalOnly:'ලේකම්ගේ අනුමැතිය', stepCompleted:'සම්පූර්ණයි',
+    multipleLettersFound:'ඔබගේ අංකයට අදාළ ලිපි {count}ක් හමු විය',
+    printReceiptHeading:'ලිපිය ලැබුණි', printReceiptScanHint:'ලිපියේ තත්ත්වය පරීක්ෂා කිරීමට QR code එක scan කරන්න',
+    senderMetaLabel:'👤', dateMetaLabel:'📅', refTagLabel:'🔖',
+    previewModeNote:'⚠️ මෙය තාවකාලික preview link එකකි (QR/tracking link වැඩ නොකරයි). මෙම app එක permanent web address එකකට host කළ පසු QR code / link එක automatically ක්‍රියාත්මක වේ. දැනට ලිපිය ගෙනාපු පුද්ගලයාට ඉහත යොමු අංකයම ලබා දෙන්න.',
+    orgNameLabel:'ආයතනයේ නම (Receipt/Letterhead)', orgNamePh:'උදා: ඉබ්බාගමුව ප්‍රදේශීය සභාව',
+    receiptPurposeNote:'මෙම රිසිට් පත ලබා දෙනු ලබන්නේ, ඔබගේ ලිපිය අප ආයතනයට ලැබී ඇති බව තහවුරු කිරීම සඳහාත්, එහි වර්තමාන තත්ත්වය පසුව පහසුවෙන් පරීක්ෂා කර ගැනීම සඳහාත්ය.',
+    forwardTitle:'ලිපිය ඉදිරියට යවන්න (Forward)', addForwardRowBtn:'+ තවත් නිලධාරියෙක් / අංශයක් එකතු කරන්න',
+    forwardNoteLabel:'සටහන (සියලුම ලබන්නන්ට පොදුවේ පෙන්වයි)', forwardNotePh:'උදා: කරුණාකර පරීක්ෂා කර කටයුතු කරන්න.',
+    forwardSendBtn:'ඉදිරියට යවන්න', forwardBtnLabel:'ඉදිරියට යවන්න (Forward)', sendBackToSecretaryOption:'ලේකම් වෙත (නැවත සමාලෝචනය සඳහා)',
+    currentlyAtLabel:'දැනට තිබෙන්නේ:', forwardedFromLabel:'{dept} මගින් යොමු කරන ලදී', forwardedOnwardLabel:'ඉදිරියට යොමු කර ඇත',
+    approvalQueueLabel:'අවසාන අනුමැතිය', approvalQueueSub:'කටයුතු අවසන් කර ඇති නමුත් ලේකම්/සභාපති අනුමැතිය පොරොත්තුවේ ඇති ලිපි',
+    finalApprovedLabel:'සම්පූර්ණයෙන් අනුමත', approvalPendingLabel:'අවසාන අනුමැතිය පොරොත්තුවේ',
+    secretaryApprovalLine:'ලේකම්ගේ නිර්දේශය:', chairmanApprovalLine:'සභාපතිතුමාගේ අනුමැතිය:',
+    approvedLabel:'අනුමතයි', pendingApprovalLabel:'පොරොත්තුවේ', awaitingApprovalLabel:'අනුමැතිය පොරොත්තුවේ',
+    giveSecretaryApprovalBtn:'ලේකම්ගේ නිර්දේශය දෙන්න', giveChairmanApprovalBtn:'සභාපතිතුමාගේ අනුමැතිය දෙන්න',
+    approvalNotePh:'නිර්දේශය / සටහන (විකල්ප)', setChairmanBtn:'සභාපති ලෙස සලකුණු කරන්න', unsetChairmanBtn:'සභාපති සලකුණ ඉවත් කරන්න',
+    needsChairmanLabel:'මෙම ලිපියට සභාපතිතුමාගේ අවසාන අනුමැතිය අවශ්‍යයි', chairmanNotRequiredLabel:'මෙම ලිපියට සභාපතිතුමාගේ අනුමැතිය අවශ්‍ය නැත',
+    exportBtn:'📤 Data Export', searchPh:'🔍 විෂය, යවන්නා, යොමු අංකය අනුව සොයන්න...',
+    priorityLabel:'හදිසි', overdueLabel:'{days} දවසක් තිස්සේ', priorityCheckboxLabel:'🔴 මෙය හදිසි ලිපියක්',
+    statsLabel:'සංඛ්‍යාලේඛන', statsSub:'ලිපි කළමනාකරණය පිළිබඳ දළ විශ්ලේෂණය',
+    statTotal:'මුළු ලිපි', statPending:'පොරොත්තුවේ', statInProgress:'කටයුතු කරමින්',
+    statAwaitingApproval:'අනුමැතිය පොරොත්තුවේ', statApproved:'සම්පූර්ණයෙන් අනුමත', statOverdue:'කල් ඉකුත් වූ',
+    statPriority:'හදිසි ලිපි', statAvgDays:'සාමාන්‍ය දින ගණන (Completion)', statByDept:'අංශය අනුව ලිපි ගණන',
+    outgoingLabel:'පිටවන ලිපි', outgoingSub:'ආයතනයෙන් යවන ලද ලිපි වල register එක',
+    outgoingAddTitle:'පිටවන ලිපියක් ලියාපදිංචි කරන්න', outgoingRefLabel:'යොමු අංකය',
+    outgoingRecipientLabel:'ලබන්නා / ආයතනය', outgoingSentViaLabel:'යැවූ ක්‍රමය',
+    outgoingAddBtn:'+ පිටවන ලිපියක් එකතු කරන්න', saveBtn:'සුරකින්න',
+    exportTitle:'Data Export', exportDesc:'සියලුම ලිපි (photos/PDF ඇතුළුව) file එකක් ලෙස බාගත කරගන්න. මෙය නිතිපතා backup එකක් ලෙස තබාගන්න.',
+    exportJsonBtn:'📦 JSON (සම්පූර්ණ Backup)', exportCsvBtn:'📊 CSV (Excel සඳහා)',
+    editTitle:'ලිපියේ විස්තර සංස්කරණය', editBtnLabel:'✏️ Edit',
+    attachmentsLabel:'අමතර පිටු / Attachments', addPageBtn:'පිටුවක් එකතු කරන්න',
+    registerBtn:'📋 Register Print', registerTitle:'ලිපි ලේඛනය (Register)',
+    registerDesc:'තෝරාගත් කාල පරාසය තුළ ලැබුණු සියලුම ලිපි වල ලේඛනගත register එකක් print කරගන්න.',
+    dateFromLabel:'සිට දිනය', dateToLabel:'සිට', dateToLabel2:'දක්වා දිනය', printRegisterBtn:'🖨️ Print',
+    archiveLabel:'සංරක්ෂණාගාරය', archiveSub:'සම්පූර්ණයෙන් අනුමත වූ, archive කළ ලිපි',
+    archiveBtnLabel:'සංරක්ෂණාගාරයට යවන්න', unarchiveBtnLabel:'ආපසු ගන්න', archivedLabel:'සංරක්ෂණාගාරයේ ඇත',
+    replyToLabel:'අදාළ ලැබුණු ලිපිය — විකල්ප (Reply to)', replyToNone:'— කිසිවක් නැත —',
+    replyToTagLabel:'{ref} ට පිළිතුරු', officerNameLoginLabel:'ඔබේ නම — විකල්ප (accountability සඳහා)'
+  },
+  en: {
+    appTitle:'Letter Routing Register', chooseRole:'Select who you are',
+    roleDispatch:'Dispatch Officer', roleSecretary:'Secretary', roleDept:'Department Officer',
+    dispatcherPinLabel:'Dispatcher PIN', secretaryPinLabel:'Secretary PIN', chooseDept:'Select department',
+    deptPinLabel:'Department PIN', pinPlaceholder:'Enter PIN', loginBtn:'Log In',
+    roleChairman:'Chairman', chairmanPinLabel:'Chairman PIN',
+    chairmanNotConfigured:'No department has been set as Chairman yet. The Secretary can mark one from "PIN Management".',
+    loginError:'Incorrect PIN. Please try again.',
+    loginNote:'First time defaults: Dispatcher PIN <b>1111</b>, Secretary PIN <b>2580</b>, Department PIN <b>1234</b>. Change these from "PIN Management" after the Secretary logs in.',
+    trackLinkText:'📍 Track your letter',
+    brandSub:'Correspondence Register', newLetterBtn:'+ New Letter', navDepts:'Departments',
+    addDeptBtn:'+ Add Department', managePinBtn:'🔐 PIN Management',
+    uploadTitle:'Register a New Letter', uploadFileLabel:'Upload the letter (Photo / PDF)',
+    chooseFile:'📎 Choose file (Image or PDF)', processingFile:'Processing file...',
+    subjectLabel:'Subject', subjectPh:'e.g. 2026 Annual Budget Proposal',
+    senderLabel:'Sender / Organization', senderPh:'e.g. District Secretariat',
+    phoneLabel:'Sender\'s phone number — optional (for tracking)', dateLabel:'Date received',
+    notesLabel:'Notes — optional', notesPh:'Additional details...',
+    refLabel:'Reference No.', refEditNote:'The auto-generated number can be changed if needed.',
+    pendingNote:'This letter will go to the Secretary as a "Pending Letter". The Secretary will assign the department and officer.',
+    cancelBtn:'Cancel', sendLetterBtn:'Send Letter',
+    minuteTitle:'Add Minute & Route', minuteDeptLabel:'Route to department',
+    officerLabel:'Assigned officer\'s name', officerPh:'e.g. Mr. K. Perera',
+    minuteNoteLabel:'Secretary\'s note / instructions', minuteNotePh:'e.g. Please action promptly and report back.',
+    submitMinuteBtn:'Add Minute & Send', confirmBtn:'Confirm', confirmTitle:'Please Confirm',
+    noBtn:'No', yesDoBtn:'Yes, do it', okBtn:'OK', pinMgmtTitle:'PIN Management',
+    secretaryPinLabel2:'Secretary PIN', changeBtn:'Change', dispatcherPinLabel2:'Dispatcher PIN',
+    deptPinLabel2:'Department PIN', closeBtn:'Close', trackTitle:'Track Your Letter',
+    trackInputLabel:'Reference number or phone number', trackPh:'e.g. OL-2026-0001 or 0771234567',
+    searchBtn:'Search', receiptTitle:'Letter Received ✅',
+    receiptDesc:'Give this QR code or link to the person who brought the letter. They can use it to check its status.',
+    copyBtn:'📋 Copy', printReceiptBtn:'🖨️ Print Receipt',
+    logoutLink:'Log out',
+    dispatchViewTitle:'Letters You Uploaded', dispatchViewSub:'Shown here as "Pending" until the Secretary adds a minute and routes it',
+    pendingViewTitle:'Pending Letters', pendingViewSub:'Letters awaiting a minute and routing to a department and officer',
+    allViewTitle:'All Letters', allViewSub:'All letters received',
+    deptViewSub:'Letters routed to this department', deptOfficerSub:'Letters routed to this department by the Secretary',
+    emptyLetters:'No letters yet.', pendingAllLabel:'⏳ Pending Letters', allLettersLabel:'📥 All Letters',
+    statusPending:'⏳ Pending', statusCompleted:'✅ Completed', printBtnLabel:'🖨️ Print',
+    deleteBtnLabel:'🗑 Delete', markCompleteBtn:'✅ Mark as Completed', refPrefix:'Reference No.:',
+    minuteBoxTitle:'Secretary\'s Minute', minuteDeptLine:'Routed to department:', minuteOfficerLine:'Assigned officer:',
+    minuteInstrLine:'Instructions:', minuteStatusLine:'Status:', statusDone:'✅ Completed',
+    statusInProgress:'⏳ In progress', loadingText:'Loading letter...',
+    loadFailText:'Could not load the letter.', quickLoadingText:'Loading...',
+    quickLoadFailText:'Could not load.', pdfDownloadBtn:'⬇️ Download / Open PDF',
+    pdfDownloadShort:'⬇️ Download PDF', alreadyExistsDept:'This department already exists.',
+    confirmDeleteDept:'Delete department "{name}"?', confirmDeleteLetter:'Delete this letter?',
+    fillSubjectSenderDate:'Please fill in the subject, sender and date.', fillRef:'Please fill in the reference number.',
+    dupRef:'This reference number is already in use. Please choose another.', needFile:'Please upload a photo or PDF of the letter.',
+    fillDeptOfficer:'Please fill in the department and officer\'s name.', copiedMsg:'Link copied!',
+    copyFailMsg:'Could not copy. Please select and copy the link manually.',
+    addDeptModalTitle:'Add a New Department', addDeptNamePh:'Department name', addDeptPinPh:'PIN (e.g. 1234)',
+    changePinTitleSecretary:'New Secretary PIN', changePinTitleDispatch:'New Dispatcher PIN',
+    changePinTitleDept:'New PIN for {name}', pinFieldPh:'PIN',
+    trackNoInput:'Please enter a reference number or phone number.',
+    trackNoMatch:'No matching letter found. Please check the reference/phone number and try again.',
+    trackStatusPending:'⏳ Secretary', trackStatusDone:'✅ Completed — {dept}', trackStatusProgress:'🔄 {dept} - In progress',
+    stepReceived:'Letter Received', stepSecretaryReview:'Secretary Review', stepDeptAction:'Department Action',
+    stepAwaitingApproval:'Secretary/Chairman Approval', stepSecretaryApprovalOnly:'Secretary Approval', stepCompleted:'Completed',
+    multipleLettersFound:'Found {count} letter(s) matching your number',
+    printReceiptHeading:'Letter Received', printReceiptScanHint:'Scan the QR code to check the letter\'s status',
+    senderMetaLabel:'👤', dateMetaLabel:'📅', refTagLabel:'🔖',
+    previewModeNote:'⚠️ This is a temporary preview link (the QR/tracking link will not work). Once this app is hosted at a permanent web address, the QR code / link will work automatically. For now, just give the person who brought the letter the reference number above.',
+    orgNameLabel:'Organization Name (Receipt/Letterhead)', orgNamePh:'e.g. Ibbagamuwa Pradeshiya Sabha',
+    receiptPurposeNote:'This receipt is given to confirm that your letter has been received by our office, and so that its current status can be checked later.',
+    forwardTitle:'Forward This Letter', addForwardRowBtn:'+ Add another officer / department',
+    forwardNoteLabel:'Note (shown to all recipients)', forwardNotePh:'e.g. Please review and action.',
+    forwardSendBtn:'Forward', forwardBtnLabel:'Forward', sendBackToSecretaryOption:'Secretary (for re-review)',
+    currentlyAtLabel:'Currently at:', forwardedFromLabel:'Forwarded from {dept}', forwardedOnwardLabel:'Forwarded onward',
+    approvalQueueLabel:'Final Approval', approvalQueueSub:'Letters where work is complete but awaiting Secretary/Chairman sign-off',
+    finalApprovedLabel:'Fully Approved', approvalPendingLabel:'Awaiting final approval',
+    secretaryApprovalLine:'Secretary\'s recommendation:', chairmanApprovalLine:'Chairman\'s approval:',
+    approvedLabel:'Approved', pendingApprovalLabel:'Pending', awaitingApprovalLabel:'Awaiting approval',
+    giveSecretaryApprovalBtn:'Give Secretary\'s Recommendation', giveChairmanApprovalBtn:'Give Chairman\'s Approval',
+    approvalNotePh:'Recommendation / note (optional)', setChairmanBtn:'Mark as Chairman', unsetChairmanBtn:'Unmark Chairman',
+    needsChairmanLabel:'This letter requires the Chairman\'s final approval', chairmanNotRequiredLabel:'Chairman\'s approval is not required for this letter',
+    exportBtn:'📤 Data Export', searchPh:'🔍 Search by subject, sender, reference number...',
+    priorityLabel:'Urgent', overdueLabel:'{days} day(s)', priorityCheckboxLabel:'🔴 This is an urgent letter',
+    statsLabel:'Statistics', statsSub:'An overview of the correspondence management process',
+    statTotal:'Total Letters', statPending:'Pending', statInProgress:'In Progress',
+    statAwaitingApproval:'Awaiting Approval', statApproved:'Fully Approved', statOverdue:'Overdue',
+    statPriority:'Urgent Letters', statAvgDays:'Avg. Days to Complete', statByDept:'Letters by Department',
+    outgoingLabel:'Outgoing Letters', outgoingSub:'Register of letters sent by the organization',
+    outgoingAddTitle:'Register an Outgoing Letter', outgoingRefLabel:'Reference No.',
+    outgoingRecipientLabel:'Recipient / Organization', outgoingSentViaLabel:'Sent Via',
+    outgoingAddBtn:'+ Add Outgoing Letter', saveBtn:'Save',
+    exportTitle:'Data Export', exportDesc:'Download all letters (including photos/PDFs) as a file. Keep this as a regular backup.',
+    exportJsonBtn:'📦 JSON (Full Backup)', exportCsvBtn:'📊 CSV (For Excel)',
+    editTitle:'Edit Letter Details', editBtnLabel:'✏️ Edit',
+    attachmentsLabel:'Additional Pages / Attachments', addPageBtn:'Add a page',
+    registerBtn:'📋 Register Print', registerTitle:'Letter Register',
+    registerDesc:'Print a formal register of all letters received within the selected date range.',
+    dateFromLabel:'From date', dateToLabel:'to', dateToLabel2:'To date', printRegisterBtn:'🖨️ Print',
+    archiveLabel:'Archive', archiveSub:'Fully approved letters that have been archived',
+    archiveBtnLabel:'Send to Archive', unarchiveBtnLabel:'Restore', archivedLabel:'In Archive',
+    replyToLabel:'Related incoming letter — optional (Reply to)', replyToNone:'— None —',
+    replyToTagLabel:'Reply to {ref}', officerNameLoginLabel:'Your name — optional (for accountability)'
+  }
+};
+function t(key, params){
+  let s = (T[lang] && T[lang][key]) || key;
+  if(params){ for(const k in params){ s = s.replace('{'+k+'}', params[k]); } }
+  return s;
+}
+function applyLanguage(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    el.innerHTML = t(key);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-ph');
+    el.setAttribute('placeholder', t(key));
+  });
+  document.getElementById('langToggle').textContent = lang==='si' ? 'EN' : 'සිං';
+  document.documentElement.lang = lang;
+}
+async function toggleLang(){
+  lang = lang==='si' ? 'en' : 'si';
+  applyLanguage();
+  await safeSet('lang-pref', lang, false);
+  if(session){
+    renderSidebar();
+    renderMain();
+    refreshSessionTag();
+  }
+}
+function refreshSessionTag(){
+  const tag = document.getElementById('sessionTag');
+  if(!session) return;
+  const roleLabel = session.role==='dispatch' ? t('roleDispatch') : session.role==='secretary' ? t('roleSecretary') : escapeHtml(session.dept);
+  tag.innerHTML = `👤 <b>${roleLabel}</b><br><span class="logout-link" onclick="logout()">${t('logoutLink')}</span>`;
+}
+
+let departments = [];
+let searchQuery = '';
+let dateFrom = '';
+let dateTo = '';
+let outgoingLetters = [];
+let editTargetId = null;
+let letterIndex = [];
+let secretaryPin = "2580";
+let dispatchPin = "1111";
+let session = null;
+let currentView = "__all__";
+let pendingFile = null;
+let loginRole = "dispatch";
+let minuteTargetId = null;
+let forwardSourceLetter = null;
+let forwardRowCount = 0;
+
+const DEFAULT_DEPTS = [
+  "ආයතන අංශය","ආදායම් අංශය","ගිණුම් අංශය",
+  "කර්මාන්ත අංශය","ප්‍රජා අංශය","සභාපතිතුමා"
+];
+
+async function safeGet(key, shared){
+  try{ const r = await window.storage.get(key, shared); return r ? r.value : null; }
+  catch(e){ return null; }
+}
+async function safeSet(key, value, shared){
+  try{ await window.storage.set(key, value, shared); return true; }
+  catch(e){ console.error('storage set failed', e); return false; }
+}
+async function safeDelete(key, shared){
+  try{ await window.storage.delete(key, shared); } catch(e){ /* ignore */ }
+}
+
+async function init(){
+  document.querySelectorAll('.org-seal-img').forEach(img=>{ img.src = ORG_LOGO; });
+
+  const langRaw = await safeGet('lang-pref', false);
+  if(langRaw){ lang = langRaw; }
+  applyLanguage();
+
+  const orgRaw = await safeGet('org-name', true);
+  if(orgRaw){ orgName = orgRaw; } else { await safeSet('org-name', orgName, true); }
+  const orgTitleEl = document.getElementById('orgNameDisplay');
+  if(orgTitleEl) orgTitleEl.textContent = orgName;
+  const sidebarOrgEl = document.getElementById('sidebarOrgName');
+  if(sidebarOrgEl) sidebarOrgEl.textContent = orgName;
+
+  const dRaw = await safeGet('departments', true);
+  if(dRaw){
+    let parsed = JSON.parse(dRaw);
+    if(parsed.length > 0 && typeof parsed[0] === 'string'){
+      parsed = parsed.map(n=>({name:n, pin:'1234'}));
+      await safeSet('departments', JSON.stringify(parsed), true);
+    }
+    departments = parsed.filter(d=> d && d.name);
+    const oldDefaults = ["පරිපාලන අංශය","මානව සම්පත් අංශය","තොරතුරු තාක්ෂණ අංශය","ප්‍රසම්පාදන අංශය","නීති අංශය","වාර්තා අංශය","අධ්‍යක්ෂ කාර්යාලය"];
+    if(departments.some(d=>oldDefaults.includes(d.name))){
+      departments = DEFAULT_DEPTS.map(n=>({name:n, pin:"1234"}));
+      await safeSet('departments', JSON.stringify(departments), true);
+    }
+  }else{
+    departments = DEFAULT_DEPTS.map(n=>({name:n, pin:"1234"}));
+    await safeSet('departments', JSON.stringify(departments), true);
+  }
+  // Auto-flag "සභාපතිතුමා" as the Chairman department if no department is flagged yet (one-time)
+  if(!departments.some(d=>d.isChairman)){
+    const chairDept = departments.find(d=>d.name==='සභාපතිතුමා' || d.name.toLowerCase()==='chairman');
+    if(chairDept){ chairDept.isChairman = true; await safeSet('departments', JSON.stringify(departments), true); }
+  }
+
+  const sRaw = await safeGet('secretary-pin', true);
+  if(sRaw){ secretaryPin = sRaw; } else { await safeSet('secretary-pin', secretaryPin, true); }
+  const dpRaw = await safeGet('dispatch-pin', true);
+  if(dpRaw){ dispatchPin = dpRaw; } else { await safeSet('dispatch-pin', dispatchPin, true); }
+
+  // Load lightweight index
+  const iRaw = await safeGet('letters-index', true);
+  if(iRaw){
+    letterIndex = JSON.parse(iRaw);
+  }else{
+    letterIndex = [];
+    // One-time migration from the old single-key storage format, if present
+    const oldRaw = await safeGet('letters-all', true);
+    if(oldRaw){
+      try{
+        const oldLetters = JSON.parse(oldRaw);
+        for(const l of oldLetters){
+          await safeSet('letter:'+l.id, JSON.stringify(l), true);
+          letterIndex.push(indexEntryFromFull(l));
+        }
+        await safeSet('letters-index', JSON.stringify(letterIndex), true);
+        await safeDelete('letters-all', true);
+      }catch(e){ console.error('migration failed', e); }
+    }
+  }
+  populateLoginDeptSelect();
+  await loadOutgoing();
+
+  // If opened via a #track link/QR code, jump straight to the public tracker (no login needed)
+  if(window.location.hash === '#track'){
+    openTracker();
+  }
+}
+
+function getTrackLink(){
+  // In Claude's preview/artifact sandbox the page URL is something like "about:srcdoc",
+  // which is not a real, shareable address — a QR/link built from it would be broken.
+  // Only build a real tracking link when the app is actually hosted at a normal http(s) URL.
+  if(window.location.protocol !== 'http:' && window.location.protocol !== 'https:'){
+    return null;
+  }
+  const base = window.location.href.split('#')[0];
+  return base + '#track';
+}
+
+function indexEntryFromFull(l){
+  return {
+    id:l.id, ref:l.ref, subject:l.subject, sender:l.sender, date:l.date,
+    dept:l.dept, assignedOfficer:l.assignedOfficer, status:l.status,
+    uploadedBy:l.uploadedBy, read:l.read, createdAt:l.createdAt,
+    fileType:l.fileType, thumb: l.fileType==='image' ? l.fileData : null,
+    senderPhone: l.senderPhone || null, completed: l.completed || false,
+    finalApproved: l.finalApproved || false, forwarded: l.forwarded || false,
+    forwardedFromDept: l.forwardedFromDept || null
+  };
+}
+
+async function saveIndex(){ await safeSet('letters-index', JSON.stringify(letterIndex), true); }
+
+async function loadFullLetter(id){
+  const raw = await safeGet('letter:'+id, true);
+  return raw ? JSON.parse(raw) : null;
+}
+async function saveFullLetter(record){ await safeSet('letter:'+record.id, JSON.stringify(record), true); }
+
+function updateIndexEntry(id, patch){
+  const idx = letterIndex.find(x=>x.id===id);
+  if(idx) Object.assign(idx, patch);
+}
+
+function setLoginRole(role){
+  loginRole = role;
+  document.getElementById('tabDispatch').classList.toggle('active', role==='dispatch');
+  document.getElementById('tabSecretary').classList.toggle('active', role==='secretary');
+  document.getElementById('tabDept').classList.toggle('active', role==='dept');
+  document.getElementById('tabChairman').classList.toggle('active', role==='chairman');
+  document.getElementById('dispatchLogin').style.display = role==='dispatch' ? 'block':'none';
+  document.getElementById('secretaryLogin').style.display = role==='secretary' ? 'block':'none';
+  document.getElementById('deptLogin').style.display = role==='dept' ? 'block':'none';
+  document.getElementById('chairmanLogin').style.display = role==='chairman' ? 'block':'none';
+  document.getElementById('loginError').style.display='none';
+}
+function populateLoginDeptSelect(){
+  const sel = document.getElementById('loginDeptSelect');
+  sel.innerHTML = departments.map(d=>`<option value="${escapeAttr(d.name)}">${d.name}</option>`).join('');
+}
+
+function doLogin(){
+  const err = document.getElementById('loginError');
+  if(loginRole==='dispatch'){
+    const val = document.getElementById('dispatchPinInput').value;
+    if(val === dispatchPin){ session = { role:'dispatch' }; enterApp(); }
+    else{ err.style.display='block'; }
+  }else if(loginRole==='secretary'){
+    const val = document.getElementById('secretaryPinInput').value;
+    if(val === secretaryPin){ session = { role:'secretary' }; enterApp(); }
+    else{ err.style.display='block'; }
+  }else if(loginRole==='chairman'){
+    const chairDept = departments.find(d=>d.isChairman);
+    if(!chairDept){ err.textContent = t('chairmanNotConfigured'); err.style.display='block'; return; }
+    err.textContent = t('loginError');
+    const val = document.getElementById('chairmanPinInput').value;
+    if(val === chairDept.pin){ session = { role:'dept', dept: chairDept.name }; enterApp(); }
+    else{ err.style.display='block'; }
+  }else{
+    const deptName = document.getElementById('loginDeptSelect').value;
+    const val = document.getElementById('deptPinInput').value;
+    const officerName = document.getElementById('deptOfficerNameInput').value.trim();
+    const d = departments.find(x=>x.name===deptName);
+    if(d && val === d.pin){ session = { role:'dept', dept: deptName, officerName: officerName||null }; enterApp(); }
+    else{ err.style.display='block'; }
+  }
+}
+
+function logout(){
+  session = null;
+  document.getElementById('dispatchPinInput').value='';
+  document.getElementById('secretaryPinInput').value='';
+  document.getElementById('deptPinInput').value='';
+  document.getElementById('chairmanPinInput').value='';
+  document.getElementById('deptOfficerNameInput').value='';
+  document.getElementById('loginError').style.display='none';
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+}
+
+function enterApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appScreen').style.display='flex';
+  document.getElementById('fDate').valueAsDate = new Date();
+  const newBtn = document.getElementById('newLetterBtn');
+  const addBtn = document.getElementById('addDeptBtn');
+  const pinBtn = document.getElementById('managePinBtn');
+  const exportBtnEl = document.getElementById('exportBtn');
+  const registerBtnEl = document.getElementById('registerBtn');
+  const navLabel = document.getElementById('navLabel');
+
+  if(session.role==='dispatch'){
+    newBtn.style.display='block'; addBtn.style.display='none'; pinBtn.style.display='none'; exportBtnEl.style.display='none'; registerBtnEl.style.display='none';
+    navLabel.style.display='none';
+    currentView = "__mine__";
+  }else if(session.role==='secretary'){
+    newBtn.style.display='none'; addBtn.style.display='block'; pinBtn.style.display='block'; exportBtnEl.style.display='block'; registerBtnEl.style.display='block';
+    navLabel.style.display='block';
+    currentView = "__pending__";
+  }else{
+    newBtn.style.display='none'; addBtn.style.display='none'; pinBtn.style.display='none'; exportBtnEl.style.display='none'; registerBtnEl.style.display='none';
+    navLabel.style.display = isChairmanDept(session.dept) ? 'block' : 'none';
+    currentView = session.dept;
+  }
+  refreshSessionTag();
+  renderSidebar();
+  renderMain();
+  populateMinuteDeptSelect();
+}
+
+function isChairmanDept(deptName){
+  const d = departments.find(x=>x.name===deptName);
+  return !!(d && d.isChairman);
+}
+function approvalQueueCount(chairmanOnly){
+  return letterIndex.filter(l=>l.completed && !l.finalApproved && (!chairmanOnly || l.requiresChairman!==false)).length;
+}
+
+function renderSidebar(){
+  const list = document.getElementById('deptList');
+  let html = "";
+  if(session.role==='secretary'){
+    const pendingCount = letterIndex.filter(l=>l.status==='pending').length;
+    html += `<div class="dept-item ${currentView==='__pending__'?'active':''}" onclick="selectView('__pending__')"><span>${t('pendingAllLabel')}</span>${pendingCount>0?`<span class="badge pending">${pendingCount}</span>`:''}</div>`;
+    html += `<div class="dept-item ${currentView==='__all__'?'active':''}" onclick="selectView('__all__')"><span>${t('allLettersLabel')}</span><span class="badge">${letterIndex.length}</span></div>`;
+    const apCount = approvalQueueCount();
+    html += `<div class="dept-item ${currentView==='__approval__'?'active':''}" onclick="selectView('__approval__')"><span>🏛 ${t('approvalQueueLabel')}</span>${apCount>0?`<span class="badge pending">${apCount}</span>`:''}</div>`;
+    html += `<div class="dept-item ${currentView==='__stats__'?'active':''}" onclick="selectView('__stats__')"><span>📊 ${t('statsLabel')}</span></div>`;
+    html += `<div class="dept-item ${currentView==='__outgoing__'?'active':''}" onclick="selectView('__outgoing__')"><span>📮 ${t('outgoingLabel')}</span><span class="badge">${outgoingLetters.length}</span></div>`;
+    const archiveCount = letterIndex.filter(l=>l.archived).length;
+    html += `<div class="dept-item ${currentView==='__archive__'?'active':''}" onclick="selectView('__archive__')"><span>📦 ${t('archiveLabel')}</span>${archiveCount>0?`<span class="badge">${archiveCount}</span>`:''}</div>`;
+    departments.forEach(d=>{
+      const unread = letterIndex.filter(l=>l.dept===d.name && l.status==='minuted' && !l.read).length;
+      html += `<div class="dept-item ${currentView===d.name?'active':''}" onclick="selectView('${escapeAttr(d.name)}')"><span>${d.name}${d.isChairman ? ' 🏛':''}</span>${unread>0?`<span class="badge">${unread}</span>`:''}</div>`;
+    });
+  }else if(session.role==='dept' && isChairmanDept(session.dept)){
+    const unread = letterIndex.filter(l=>l.dept===session.dept && l.status==='minuted' && !l.read).length;
+    html += `<div class="dept-item ${currentView===session.dept?'active':''}" onclick="selectView('${escapeAttr(session.dept)}')"><span>${session.dept}</span>${unread>0?`<span class="badge">${unread}</span>`:''}</div>`;
+    const apCount = approvalQueueCount(true);
+    html += `<div class="dept-item ${currentView==='__approval__'?'active':''}" onclick="selectView('__approval__')"><span>🏛 ${t('approvalQueueLabel')}</span>${apCount>0?`<span class="badge pending">${apCount}</span>`:''}</div>`;
+  }
+  list.innerHTML = html;
+}
+
+function escapeAttr(s){ return String(s).replace(/'/g,"\\'"); }
+function escapeHtml(s){ const div=document.createElement('div'); div.innerText=s??''; return div.innerHTML; }
+
+function dataURLtoBlobURL(dataURL){
+  try{
+    const arr = dataURL.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/pdf';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+    const blob = new Blob([u8arr], {type:mime});
+    return URL.createObjectURL(blob);
+  }catch(e){
+    console.error('blob conversion failed', e);
+    return dataURL;
+  }
+}
+
+/* ---- Generic input/confirm modals (replacing native prompt()/confirm(),
+       which are blocked inside this sandboxed environment) ---- */
+let _inputCallback = null;
+function showInputModal(title, defaultValue, placeholder, callback){
+  document.getElementById('inputModalTitle').textContent = title;
+  const f1 = document.getElementById('inputModalField');
+  f1.value = defaultValue || '';
+  f1.placeholder = placeholder || '';
+  document.getElementById('inputModalField2').style.display = 'none';
+  _inputCallback = callback;
+  document.getElementById('inputOverlay').classList.add('show');
+  setTimeout(()=>f1.focus(), 50);
+}
+function showDoubleInputModal(title, ph1, ph2, callback){
+  document.getElementById('inputModalTitle').textContent = title;
+  const f1 = document.getElementById('inputModalField');
+  const f2 = document.getElementById('inputModalField2');
+  f1.value=''; f1.placeholder = ph1;
+  f2.value=''; f2.placeholder = ph2; f2.style.display='block';
+  _inputCallback = (v1)=>{ callback(v1, f2.value.trim()); };
+  document.getElementById('inputOverlay').classList.add('show');
+  setTimeout(()=>f1.focus(), 50);
+}
+function closeInputModal(){ document.getElementById('inputOverlay').classList.remove('show'); _inputCallback = null; }
+
+function openTracker(){
+  document.getElementById('trackInput').value='';
+  document.getElementById('trackResults').innerHTML='';
+  document.getElementById('trackOverlay').classList.add('show');
+}
+function closeTracker(){ document.getElementById('trackOverlay').classList.remove('show'); }
+
+function pickCurrentPerRef(matches){
+  // A forwarded letter creates a new index entry per hop that shares the same reference
+  // number. For public tracking we only want to show the current (non-forwarded) copy of
+  // each reference, so the same physical letter doesn't appear twice.
+  const map = {};
+  matches.forEach(l=>{
+    const existing = map[l.ref];
+    if(!existing){ map[l.ref] = l; return; }
+    const lCurrent = !l.forwarded;
+    const eCurrent = !existing.forwarded;
+    if(lCurrent && !eCurrent){ map[l.ref] = l; }
+    else if(lCurrent === eCurrent && l.createdAt > existing.createdAt){ map[l.ref] = l; }
+  });
+  return Object.values(map);
+}
+
+function letterStageIndex(l){
+  if(l.finalApproved) return 4;
+  if(l.completed) return 3;
+  if(l.status==='minuted') return 2;
+  return 1; // pending / with secretary
+}
+
+function buildStepperHtml(l){
+  const chairmanNeeded = l.requiresChairman !== false;
+  const stages = [
+    t('stepReceived'),
+    t('stepSecretaryReview'),
+    l.status==='minuted' || l.completed || l.finalApproved ? escapeHtml(l.dept) : t('stepDeptAction'),
+    chairmanNeeded ? t('stepAwaitingApproval') : t('stepSecretaryApprovalOnly'),
+    t('stepCompleted')
+  ];
+  const cur = letterStageIndex(l);
+  let html = '<div class="steps">';
+  stages.forEach((label, i)=>{
+    const state = i < cur ? 'done' : i === cur ? 'current' : 'todo';
+    const icon = state === 'done' ? '✓' : String(i+1);
+    const isLast = i === stages.length - 1;
+    html += `<div class="step ${state}">
+      <div class="step-dot">${icon}</div>
+      ${!isLast ? `<div class="step-line ${i < cur ? 'line-done':''}"></div>` : ''}
+      <div class="step-label">${label}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+async function trackSearch(){
+  const q = document.getElementById('trackInput').value.trim();
+  const results = document.getElementById('trackResults');
+  if(!q){ results.innerHTML = `<div class="empty" style="padding:20px;">${t('trackNoInput')}</div>`; return; }
+
+  // Ensure we have the latest index (tracker may be used without ever logging in)
+  const iRaw = await safeGet('letters-index', true);
+  if(iRaw) letterIndex = JSON.parse(iRaw);
+
+  const rawMatches = letterIndex.filter(l => l.ref===q || (l.senderPhone && l.senderPhone===q));
+  const matches = pickCurrentPerRef(rawMatches).sort((a,b)=>b.createdAt-a.createdAt);
+  if(matches.length===0){
+    results.innerHTML = `<div class="empty" style="padding:20px;">${t('trackNoMatch')}</div>`;
+    return;
+  }
+  const multiNote = matches.length>1 ? `<div class="note-small" style="text-align:center; margin-top:0; margin-bottom:4px;">${t('multipleLettersFound',{count:matches.length})}</div>` : '';
+  results.innerHTML = multiNote + matches.map(l=>{
+    return `<div class="track-card">
+      <div class="tsubject">${escapeHtml(l.subject)}</div>
+      <div class="letter-meta"><span>📅 ${l.date}</span><span>🔖 ${l.ref}</span></div>
+      ${buildStepperHtml(l)}
+    </div>`;
+  }).join('');
+}
+function confirmInputModal(){
+  const val = document.getElementById('inputModalField').value.trim();
+  const cb = _inputCallback;
+  closeInputModal();
+  if(cb) cb(val);
+}
+
+let _confirmCallback = null;
+function showConfirmModal(message, callback){
+  document.getElementById('confirmModalMsg').textContent = message;
+  _confirmCallback = callback;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirmModal(){ document.getElementById('confirmOverlay').classList.remove('show'); _confirmCallback = null; }
+function confirmConfirmModal(){
+  const cb = _confirmCallback;
+  closeConfirmModal();
+  if(cb) cb();
+}
+
+function showAlertModal(message){
+  document.getElementById('alertModalMsg').textContent = message;
+  document.getElementById('alertOverlay').classList.add('show');
+}
+function closeAlertModal(){ document.getElementById('alertOverlay').classList.remove('show'); }
+
+function selectView(v){
+  if(session.role==='secretary'){ /* allowed */ }
+  else if(session.role==='dept' && isChairmanDept(session.dept)){ /* allowed */ }
+  else return;
+  currentView = v;
+  renderSidebar();
+  renderMain();
+}
+
+function onSearchInput(v){
+  searchQuery = v.trim().toLowerCase();
+  renderMain();
+}
+
+function onDateFilterChange(){
+  dateFrom = document.getElementById('dateFromInput').value;
+  dateTo = document.getElementById('dateToInput').value;
+  renderMain();
+}
+function clearDateFilter(){
+  dateFrom = ''; dateTo = '';
+  document.getElementById('dateFromInput').value = '';
+  document.getElementById('dateToInput').value = '';
+  renderMain();
+}
+
+function daysSince(ts){
+  if(!ts) return 0;
+  return Math.floor((Date.now()-ts)/(24*3600*1000));
+}
+function isOverdue(l){
+  if(l.status==='pending'){ return daysSince(l.createdAt) >= 2; }
+  if(l.status==='minuted' && !l.completed){ return daysSince(l.minutedAt||l.createdAt) >= 3; }
+  return false;
+}
+function overdueDays(l){
+  return l.status==='pending' ? daysSince(l.createdAt) : daysSince(l.minutedAt||l.createdAt);
+}
+
+function renderMain(){
+  const title = document.getElementById('pageTitle');
+  const sub = document.getElementById('pageSub');
+  const container = document.getElementById('letterList');
+  const searchBox = document.getElementById('searchBox');
+  const dateFilterRow = document.getElementById('dateFilterRow');
+  let list = [];
+
+  if(currentView==='__stats__' && session.role==='secretary'){
+    searchBox.style.display = 'none';
+    dateFilterRow.style.display = 'none';
+    renderStats();
+    return;
+  }
+  if(currentView==='__outgoing__' && session.role==='secretary'){
+    searchBox.style.display = 'none';
+    dateFilterRow.style.display = 'none';
+    renderOutgoing();
+    return;
+  }
+  searchBox.style.display = 'block';
+  dateFilterRow.style.display = 'flex';
+
+  if(session.role==='dispatch'){
+    title.textContent = t('dispatchViewTitle');
+    sub.textContent = t('dispatchViewSub');
+    list = letterIndex.filter(l=>l.uploadedBy==='dispatch');
+  }else if(session.role==='secretary'){
+    if(currentView==='__pending__'){
+      title.textContent = t('pendingViewTitle');
+      sub.textContent = t('pendingViewSub');
+      list = letterIndex.filter(l=>l.status==='pending');
+    }else if(currentView==='__all__'){
+      title.textContent = t('allViewTitle');
+      sub.textContent = t('allViewSub');
+      list = letterIndex.filter(l=>!l.archived);
+    }else if(currentView==='__approval__'){
+      title.textContent = t('approvalQueueLabel');
+      sub.textContent = t('approvalQueueSub');
+      list = letterIndex.filter(l=>l.completed && !l.finalApproved);
+    }else if(currentView==='__archive__'){
+      title.textContent = t('archiveLabel');
+      sub.textContent = t('archiveSub');
+      list = letterIndex.filter(l=>l.archived);
+    }else{
+      title.textContent = currentView;
+      sub.textContent = t('deptViewSub');
+      list = letterIndex.filter(l=>l.dept===currentView && l.status==='minuted' && !l.archived);
+    }
+  }else if(session.role==='dept' && isChairmanDept(session.dept) && currentView==='__approval__'){
+    title.textContent = t('approvalQueueLabel');
+    sub.textContent = t('approvalQueueSub');
+    list = letterIndex.filter(l=>l.completed && !l.finalApproved && l.requiresChairman!==false);
+  }else{
+    title.textContent = session.dept;
+    sub.textContent = t('deptOfficerSub');
+    list = letterIndex.filter(l=>l.dept===session.dept && l.status==='minuted' && !l.archived);
+  }
+
+  if(dateFrom){ list = list.filter(l => l.date >= dateFrom); }
+  if(dateTo){ list = list.filter(l => l.date <= dateTo); }
+
+  if(searchQuery){
+    list = list.filter(l =>
+      (l.subject||'').toLowerCase().includes(searchQuery) ||
+      (l.sender||'').toLowerCase().includes(searchQuery) ||
+      (l.ref||'').toLowerCase().includes(searchQuery)
+    );
+  }
+
+  list = list.slice().sort((a,b)=>{
+    if(!!a.isPriority !== !!b.isPriority) return a.isPriority ? -1 : 1;
+    return b.createdAt-a.createdAt;
+  });
+
+  if(list.length===0){ container.innerHTML = `<div class="empty">${t('emptyLetters')}</div>`; return; }
+
+  container.innerHTML = list.map(l=>{
+    const thumb = l.fileType==='image' && l.thumb
+      ? `<div class="thumb"><img src="${l.thumb}"></div>`
+      : `<div class="thumb"><span class="pdf-icon">PDF</span></div>`;
+    const isPendingCard = l.status==='pending';
+    const cardClass = session.role==='dept' && !l.read ? 'unread' : (isPendingCard ? 'pending':'');
+    const priorityTag = l.isPriority ? `<span class="priority-tag">🔴 ${t('priorityLabel')}</span>` : '';
+    const overdueTag = isOverdue(l) ? `<span class="overdue-tag">⚠️ ${t('overdueLabel',{days:overdueDays(l)})}</span>` : '';
+    let tagsHtml = '';
+    if(l.status==='pending'){
+      tagsHtml = priorityTag + `<span class="status-tag pending">${t('statusPending')}</span>` + overdueTag;
+    }else{
+      let completedTag = '';
+      if(l.completed){
+        if(l.finalApproved){
+          completedTag = `<span class="status-tag" style="background:rgba(63,140,88,0.22); color:#245c33; font-weight:700;">✅✅ ${t('finalApprovedLabel')}</span>`;
+        }else{
+          completedTag = `<span class="status-tag" style="background:rgba(63,140,88,0.16); color:#2c6b41;">${t('statusCompleted')}</span> <span class="status-tag pending" style="margin-left:4px;">🏛 ${t('awaitingApprovalLabel')}</span>`;
+        }
+      }
+      tagsHtml = priorityTag + `<span class="dept-tag">${l.dept}</span>` + (l.assignedOfficer ? `<span class="officer-tag">👤 ${escapeHtml(l.assignedOfficer)}</span>` : '') + completedTag + overdueTag + (l.forwarded ? `<span class="forwarded-tag">➡ ${t('forwardedOnwardLabel')}</span>` : '') + (l.forwardedFromDept ? `<span class="forwarded-tag">↪ ${t('forwardedFromLabel',{dept:escapeHtml(l.forwardedFromDept)})}</span>` : '');
+    }
+    return `<div class="letter-card ${cardClass}" onclick="${l.status==='pending' && session.role==='secretary' ? `openMinuteModal('${l.id}')` : `openDetail('${l.id}')`}">
+      <div class="thumb-wrap" style="position:relative; flex-shrink:0;">
+        ${thumb}
+        <button class="preview-eye" title="Quick preview" onclick="event.stopPropagation(); quickPreview('${l.id}')">👁</button>
+      </div>
+      <div class="letter-info">
+        <div class="letter-subject">${escapeHtml(l.subject)}</div>
+        <div class="letter-meta"><span>${t('senderMetaLabel')} ${escapeHtml(l.sender)}</span><span>${t('dateMetaLabel')} ${l.date}</span></div>
+        ${tagsHtml}
+      </div>
+      <div class="stamp">INWARD<br>${l.ref}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStats(){
+  const title = document.getElementById('pageTitle');
+  const sub = document.getElementById('pageSub');
+  const container = document.getElementById('letterList');
+  title.textContent = t('statsLabel');
+  sub.textContent = t('statsSub');
+
+  const total = letterIndex.length;
+  const pendingCount = letterIndex.filter(l=>l.status==='pending').length;
+  const inProgressCount = letterIndex.filter(l=>l.status==='minuted' && !l.completed).length;
+  const awaitingApprovalCount = letterIndex.filter(l=>l.completed && !l.finalApproved).length;
+  const approvedCount = letterIndex.filter(l=>l.finalApproved).length;
+  const overdueCount = letterIndex.filter(isOverdue).length;
+  const priorityCount = letterIndex.filter(l=>l.isPriority).length;
+
+  const withTimes = letterIndex.filter(l=>l.completedAt && l.minutedAt);
+  let avgDaysText = '—';
+  if(withTimes.length>0){
+    const avgMs = withTimes.reduce((sum,l)=>sum + (l.completedAt - l.minutedAt), 0) / withTimes.length;
+    avgDaysText = (avgMs/(24*3600*1000)).toFixed(1);
+  }
+
+  const maxDeptCount = Math.max(1, ...departments.map(d=>letterIndex.filter(l=>l.dept===d.name && l.status!=='pending').length));
+  const barsHtml = departments.map(d=>{
+    const count = letterIndex.filter(l=>l.dept===d.name && l.status!=='pending').length;
+    const pct = Math.round((count/maxDeptCount)*100);
+    return `<div class="bar-row">
+      <div class="bar-label">${escapeHtml(d.name)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <div class="bar-count">${count}</div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">${t('statTotal')}</div></div>
+      <div class="stat-card"><div class="stat-num">${pendingCount}</div><div class="stat-label">${t('statPending')}</div></div>
+      <div class="stat-card"><div class="stat-num">${inProgressCount}</div><div class="stat-label">${t('statInProgress')}</div></div>
+      <div class="stat-card"><div class="stat-num">${awaitingApprovalCount}</div><div class="stat-label">${t('statAwaitingApproval')}</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#3F8C58;">${approvedCount}</div><div class="stat-label">${t('statApproved')}</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--stamp-red);">${overdueCount}</div><div class="stat-label">${t('statOverdue')}</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--stamp-red);">${priorityCount}</div><div class="stat-label">${t('statPriority')}</div></div>
+      <div class="stat-card"><div class="stat-num">${avgDaysText}</div><div class="stat-label">${t('statAvgDays')}</div></div>
+    </div>
+    <div class="page-title" style="font-size:18px; margin-bottom:14px;">${t('statByDept')}</div>
+    ${barsHtml || `<div class="empty">${t('emptyLetters')}</div>`}
+  `;
+}
+
+async function quickPreview(id){
+  const body = document.getElementById('quickPreviewBody');
+  body.innerHTML = `<div class="loading-spinner">${t('quickLoadingText')}</div>`;
+  document.getElementById('quickPreviewOverlay').classList.add('show');
+  const l = await loadFullLetter(id);
+  if(!l){ body.innerHTML = `<div class="empty">${t('quickLoadFailText')}</div>`; return; }
+  const fileHtml = l.fileType==='image'
+    ? `<img src="${l.fileData}" style="width:100%; border-radius:8px; display:block;">`
+    : `<iframe src="${dataURLtoBlobURL(l.fileData)}" style="width:100%; height:520px; border:none; border-radius:8px;"></iframe>`;
+  body.innerHTML = `
+    <div class="letter-subject" style="font-size:15px; margin-bottom:10px;">${escapeHtml(l.subject)}</div>
+    ${fileHtml}
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeQuickPreview()">${t('closeBtn')}</button></div>
+  `;
+}
+function closeQuickPreview(){ document.getElementById('quickPreviewOverlay').classList.remove('show'); }
+
+function openUploadModal(){
+  if(session.role!=='dispatch') return;
+  pendingFile = null;
+  document.getElementById('fSubject').value='';
+  document.getElementById('fSender').value='';
+  document.getElementById('fPhone').value='';
+  document.getElementById('fNotes').value='';
+  document.getElementById('fPriority').checked = false;
+  document.getElementById('fDate').valueAsDate = new Date();
+  document.getElementById('fileDrop').classList.remove('has-file');
+  document.getElementById('fileDrop').textContent = '📎 ලිපිය තෝරන්න (Image or PDF)';
+  document.getElementById('previewImg').style.display='none';
+  updateRefPreview();
+  document.getElementById('uploadOverlay').classList.add('show');
+}
+function closeUploadModal(){ document.getElementById('uploadOverlay').classList.remove('show'); }
+function updateRefPreview(){
+  const year = new Date().getFullYear();
+  const seq = String(letterIndex.length+1).padStart(4,'0');
+  document.getElementById('refPreview').value = `OL-${year}-${seq}`;
+}
+
+function handleFile(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const loadingNote = document.getElementById('loadingNote');
+  loadingNote.style.display='block';
+  const isImage = file.type.startsWith('image/');
+  if(isImage){
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      img.onload = ()=>{
+        // Full-size version (stored in the letter's own key)
+        const canvas = document.createElement('canvas');
+        const maxW = 1100;
+        const scale = Math.min(1, maxW/img.width);
+        canvas.width = img.width*scale;
+        canvas.height = img.height*scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+
+        // Tiny thumbnail (stored in the lightweight index, so lists stay small)
+        const tcanvas = document.createElement('canvas');
+        const tMaxW = 100;
+        const tScale = Math.min(1, tMaxW/img.width);
+        tcanvas.width = img.width*tScale;
+        tcanvas.height = img.height*tScale;
+        tcanvas.getContext('2d').drawImage(img,0,0,tcanvas.width,tcanvas.height);
+        const thumbUrl = tcanvas.toDataURL('image/jpeg', 0.5);
+
+        pendingFile = { dataUrl, thumbUrl, type:'image', name:file.name };
+        document.getElementById('previewImg').src = dataUrl;
+        document.getElementById('previewImg').style.display='block';
+        document.getElementById('fileDrop').textContent = '✅ ' + file.name;
+        document.getElementById('fileDrop').classList.add('has-file');
+        loadingNote.style.display='none';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }else{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      pendingFile = { dataUrl:e.target.result, thumbUrl:null, type:'pdf', name:file.name };
+      document.getElementById('fileDrop').textContent = '✅ ' + file.name + ' (PDF)';
+      document.getElementById('fileDrop').classList.add('has-file');
+      document.getElementById('previewImg').style.display='none';
+      loadingNote.style.display='none';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+async function submitLetter(){
+  if(session.role!=='dispatch') return;
+  const subject = document.getElementById('fSubject').value.trim();
+  const sender = document.getElementById('fSender').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  const date = document.getElementById('fDate').value;
+  const notes = document.getElementById('fNotes').value.trim();
+  const ref = document.getElementById('refPreview').value.trim();
+  const isPriority = document.getElementById('fPriority').checked;
+  if(!subject || !sender || !date){ showAlertModal(t('fillSubjectSenderDate')); return; }
+  if(!ref){ showAlertModal(t('fillRef')); return; }
+  if(letterIndex.some(l=>l.ref===ref)){ showAlertModal(t('dupRef')); return; }
+  if(!pendingFile){ showAlertModal(t('needFile')); return; }
+
+  const btn = document.getElementById('submitLetterBtn');
+  btn.disabled = true; btn.textContent = lang==='si' ? 'එවමින්...' : 'Sending...';
+
+  const id = 'L'+Date.now();
+  const fullRecord = {
+    id, ref, subject, sender, senderPhone: phone || null, date, notes,
+    fileData: pendingFile.dataUrl, fileType: pendingFile.type, fileName: pendingFile.name,
+    status:'pending', dept:null, assignedOfficer:null, minuteNote:null, minutedAt:null, completed:false,
+    uploadedBy:'dispatch', read:false, createdAt: Date.now(), isPriority, extraFiles: []
+  };
+
+  await saveFullLetter(fullRecord);
+  letterIndex.push({
+    id, ref, subject, sender, senderPhone: phone || null, date,
+    dept:null, assignedOfficer:null, status:'pending', uploadedBy:'dispatch',
+    read:false, createdAt:fullRecord.createdAt, fileType:pendingFile.type,
+    thumb: pendingFile.type==='image' ? pendingFile.thumbUrl : null, completed:false, isPriority
+  });
+  await saveIndex();
+
+  btn.disabled = false; btn.textContent = t('sendLetterBtn');
+  closeUploadModal();
+  renderMain();
+  showReceipt(ref, subject);
+}
+
+function showReceipt(ref, subject){
+  document.getElementById('receiptOverlay').dataset.ref = ref;
+  document.getElementById('receiptOverlay').dataset.subject = subject;
+  document.getElementById('receiptOrgName').textContent = orgName;
+  document.getElementById('receiptPurpose').textContent = t('receiptPurposeNote');
+  const link = getTrackLink();
+
+  const bigRef = document.getElementById('receiptBigRef');
+  const previewNote = document.getElementById('receiptPreviewNote');
+  const linkSection = document.getElementById('receiptLinkSection');
+  const descText = document.getElementById('receiptDescText');
+
+  if(link){
+    bigRef.style.display = 'none';
+    previewNote.style.display = 'none';
+    linkSection.style.display = 'block';
+    descText.style.display = 'block';
+    document.getElementById('receiptRef').textContent = `${t('refPrefix')} ${ref}`;
+    document.getElementById('receiptLink').value = link;
+    const qrApi = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(link);
+    document.getElementById('receiptQr').src = qrApi;
+  }else{
+    descText.style.display = 'none';
+    linkSection.style.display = 'none';
+    bigRef.style.display = 'block';
+    document.getElementById('receiptBigRefText').textContent = ref;
+    previewNote.style.display = 'block';
+    previewNote.textContent = t('previewModeNote');
+  }
+  document.getElementById('receiptOverlay').classList.add('show');
+}
+function closeReceiptModal(){ document.getElementById('receiptOverlay').classList.remove('show'); }
+
+function copyTrackLink(){
+  const field = document.getElementById('receiptLink');
+  field.select();
+  field.setSelectionRange(0, 99999);
+  try{
+    navigator.clipboard.writeText(field.value).then(()=>{
+      showAlertModal(t('copiedMsg'));
+    }).catch(()=>{
+      document.execCommand('copy');
+      showAlertModal(t('copiedMsg'));
+    });
+  }catch(e){
+    try{ document.execCommand('copy'); showAlertModal(t('copiedMsg')); }
+    catch(e2){ showAlertModal(t('copyFailMsg')); }
+  }
+}
+
+function printReceipt(){
+  const ref = document.getElementById('receiptOverlay').dataset.ref;
+  const subject = document.getElementById('receiptOverlay').dataset.subject;
+  const link = getTrackLink();
+
+  const qrBlock = link
+    ? `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(link)}" width="220" height="220">
+       <p>${escapeHtml(t('printReceiptScanHint'))}</p>
+       <div class="link">${escapeHtml(link)}</div>`
+    : `<div class="bigref">${escapeHtml(ref)}</div>
+       <p class="note">${escapeHtml(t('previewModeNote'))}</p>`;
+
+  const printContent = `
+    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Receipt - ${escapeHtml(ref)}</title>
+    <style>
+      body{ font-family: Arial, sans-serif; text-align:center; padding:40px; }
+      .orgname{ font-family: Georgia, serif; font-size:19px; font-weight:700; color:#132233; margin-bottom:2px; }
+      .orgline{ width:80px; height:2px; background:#A9793A; margin:8px auto 18px auto; }
+      .orgseal{ width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid #C79A54; margin:0 auto 8px auto; display:block; }
+      h2{ margin-bottom:2px; }
+      .ref{ font-family: monospace; font-size:16px; color:#A23B3E; margin:14px 0; }
+      .bigref{ font-family: monospace; font-size:26px; font-weight:700; color:#A23B3E; border:2px dashed #C79A54; border-radius:10px; padding:18px; margin:18px auto; max-width:320px; }
+      .note{ font-size:12px; color:#666; max-width:380px; margin:10px auto; text-align:left; }
+      .purpose{ font-size:12.5px; color:#444; max-width:400px; margin:16px auto 4px auto; line-height:1.5; }
+      img{ margin:10px auto; }
+      .link{ font-size:11px; color:#555; word-break:break-all; margin-top:10px; }
+    </style></head><body>
+      <img class="orgseal" src="${ORG_LOGO}" alt="Seal">
+      <div class="orgname">${escapeHtml(orgName)}</div>
+      <div class="orgline"></div>
+      <h2>${escapeHtml(t('printReceiptHeading'))}</h2>
+      <p>${escapeHtml(subject||'')}</p>
+      <div class="ref">${escapeHtml(t('refPrefix'))} ${escapeHtml(ref)}</div>
+      ${qrBlock}
+      <p class="purpose">${escapeHtml(t('receiptPurposeNote'))}</p>
+    </body></html>
+  `;
+  const old = document.getElementById('printFrame');
+  if(old) old.remove();
+  const iframe = document.createElement('iframe');
+  iframe.id = 'printFrame';
+  iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0';
+  iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+  document.body.appendChild(iframe);
+  const doc = iframe.contentWindow.document;
+  doc.open(); doc.write(printContent); doc.close();
+  iframe.onload = ()=>{ setTimeout(()=>{ iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 250); };
+}
+
+function addDepartment(){
+  if(session.role!=='secretary') return;
+  showDoubleInputModal(t('addDeptModalTitle'), t('addDeptNamePh'), t('addDeptPinPh'), async (name, pin)=>{
+    if(!name){ return; }
+    if(departments.some(d=>d.name===name)){ showConfirmModal(t('alreadyExistsDept'), ()=>{}); return; }
+    departments.push({name, pin: pin || '1234'});
+    await safeSet('departments', JSON.stringify(departments), true);
+    renderSidebar();
+    populateLoginDeptSelect();
+    populateMinuteDeptSelect();
+  });
+}
+
+function populateMinuteDeptSelect(){
+  const sel = document.getElementById('mDept');
+  if(!sel) return;
+  sel.innerHTML = departments.map(d=>`<option value="${escapeAttr(d.name)}">${d.name}</option>`).join('');
+}
+
+async function openMinuteModal(id){
+  if(session.role!=='secretary') return;
+  const preview = document.getElementById('minuteLetterPreview');
+  preview.innerHTML = `<div class="loading-spinner">${t('loadingText')}</div>`;
+  minuteTargetId = id;
+  document.getElementById('mOfficer').value='';
+  document.getElementById('mNote').value='';
+  document.getElementById('mNeedsChairman').checked = true;
+  document.getElementById('mPriority').checked = false;
+  populateMinuteDeptSelect();
+  document.getElementById('minuteOverlay').classList.add('show');
+
+  const l = await loadFullLetter(id);
+  if(!l){ preview.innerHTML = `<div class="empty">${t('loadFailText')}</div>`; return; }
+  document.getElementById('mPriority').checked = !!l.isPriority;
+  const thumb = l.fileType==='image' ? `<img src="${l.fileData}" style="max-width:100%; max-height:220px; border-radius:8px;">` : `<iframe src="${dataURLtoBlobURL(l.fileData)}" style="width:100%; height:320px; border:1px solid var(--line); border-radius:8px;"></iframe><a href="${l.fileData}" download="${escapeAttr(l.fileName||'letter.pdf')}" style="display:block; margin-top:6px; color:var(--ink-soft); font-weight:600; font-size:12.5px;">${t('pdfDownloadShort')}</a>`;
+  preview.innerHTML = `
+    <div class="letter-subject" style="font-size:16px;">${escapeHtml(l.subject)}</div>
+    <div class="letter-meta"><span>${t('senderMetaLabel')} ${escapeHtml(l.sender)}</span><span>${t('dateMetaLabel')} ${l.date}</span></div>
+    <div class="ref-preview">${t('refPrefix')} ${l.ref}</div>
+    <div style="margin-top:10px;">${thumb}</div>
+    ${l.notes ? `<p style="font-size:13px; color:var(--muted); margin-top:8px;">${escapeHtml(l.notes)}</p>` : ''}
+  `;
+}
+function closeMinuteModal(){ document.getElementById('minuteOverlay').classList.remove('show'); minuteTargetId=null; }
+
+async function submitMinute(){
+  const id = minuteTargetId;
+  if(!id) return;
+  const dept = document.getElementById('mDept').value;
+  const officer = document.getElementById('mOfficer').value.trim();
+  const note = document.getElementById('mNote').value.trim();
+  const requiresChairman = document.getElementById('mNeedsChairman').checked;
+  const isPriority = document.getElementById('mPriority').checked;
+  if(!dept || !officer){ showAlertModal(t('fillDeptOfficer')); return; }
+
+  const l = await loadFullLetter(id);
+  if(!l) return;
+  const minutedAt = Date.now();
+  l.dept = dept; l.assignedOfficer = officer; l.minuteNote = note;
+  l.status = 'minuted'; l.minutedAt = minutedAt; l.read = false;
+  l.requiresChairman = requiresChairman;
+  l.isPriority = isPriority;
+  await saveFullLetter(l);
+
+  updateIndexEntry(id, { dept, assignedOfficer:officer, status:'minuted', read:false, requiresChairman, isPriority, minutedAt });
+  await saveIndex();
+
+  closeMinuteModal();
+  currentView = dept;
+  renderSidebar();
+  renderMain();
+}
+
+async function openDetail(id){
+  const container = document.getElementById('detailModalBody');
+  container.innerHTML = `<div class="loading-spinner">${t('loadingText')}</div>`;
+  document.getElementById('detailOverlay').classList.add('show');
+
+  const l = await loadFullLetter(id);
+  if(!l){ container.innerHTML = `<div class="empty">${t('loadFailText')}</div>`; return; }
+  const chairmanViewingApproval = session.role==='dept' && isChairmanDept(session.dept) && l.completed && l.requiresChairman!==false;
+  if(session.role==='dept' && !chairmanViewingApproval && (l.dept!==session.dept || l.status!=='minuted')){
+    document.getElementById('detailOverlay').classList.remove('show');
+    return;
+  }
+  if(session.role==='dept' && l.dept===session.dept && !l.read){
+    l.read = true;
+    await saveFullLetter(l);
+    updateIndexEntry(id, { read:true });
+    await saveIndex();
+    renderSidebar();
+    renderMain();
+  }
+  const fileHtml = l.fileType==='image'
+    ? `<div class="detail-file"><img src="${l.fileData}"></div>`
+    : `<div class="detail-file"><iframe src="${dataURLtoBlobURL(l.fileData)}"></iframe><a class="pdf-link" href="${l.fileData}" download="${escapeAttr(l.fileName||'letter.pdf')}">${t('pdfDownloadBtn')}</a></div>`;
+
+  const extraFiles = l.extraFiles || [];
+  const canManageAttachments = session.role==='secretary' || (session.role==='dispatch' && l.uploadedBy==='dispatch' && l.status==='pending') || (session.role==='dept' && l.dept===session.dept);
+  const attachHtml = (extraFiles.length>0 || canManageAttachments) ? `
+    <div style="margin-top:14px;">
+      <label style="margin:0 0 4px 0;">${t('attachmentsLabel')}</label>
+      <div class="attach-thumbs">
+        ${extraFiles.map((f,i)=> f.type==='image'
+          ? `<img src="${f.data}" onclick="quickPreviewExtra('${l.id}',${i})">`
+          : `<div class="thumb" style="width:90px;height:90px;cursor:pointer;" onclick="quickPreviewExtra('${l.id}',${i})"><span class="pdf-icon">PDF</span></div>`
+        ).join('')}
+        ${canManageAttachments ? `<div class="thumb" style="width:90px;height:90px;cursor:pointer; border-style:dashed;" onclick="document.getElementById('extraFileInput').dataset.letterId='${l.id}'; document.getElementById('extraFileInput').click();">+ ${t('addPageBtn')}</div>` : ''}
+      </div>
+    </div>` : '';
+
+  const priorityHtml = l.isPriority ? `<div style="margin-top:8px;"><span class="priority-tag">🔴 ${t('priorityLabel')}</span></div>` : '';
+
+  const minuteHtml = l.status==='minuted' ? `
+    <div class="minute-box">
+      <div class="mtitle">${t('minuteBoxTitle')}</div>
+      <div class="mline"><b>${t('minuteDeptLine')}</b> ${escapeHtml(l.dept)}</div>
+      <div class="mline"><b>${t('minuteOfficerLine')}</b> ${escapeHtml(l.assignedOfficer||'-')}</div>
+      ${l.minuteNote ? `<div class="mline"><b>${t('minuteInstrLine')}</b> ${escapeHtml(l.minuteNote)}</div>` : ''}
+      <div class="mline" style="margin-top:8px;"><b>${t('minuteStatusLine')}</b> ${l.completed ? t('statusDone') : t('statusInProgress')}${(l.completed && l.completedByName) ? ` — ${escapeHtml(l.completedByName)}` : ''}</div>
+      ${l.forwardedFromDept ? `<div class="mline" style="margin-top:8px; color:var(--muted);">↪ ${t('forwardedFromLabel',{dept:escapeHtml(l.forwardedFromDept)})}</div>` : ''}
+      ${l.forwarded ? `<div class="mline" style="margin-top:6px; font-weight:700; color:var(--brass);">➡ ${t('forwardedOnwardLabel')}</div>` : ''}
+    </div>` : '';
+
+  let approvalHtml = '';
+  const chairmanNeeded = l.requiresChairman !== false;
+  if(l.completed){
+    const secApp = l.approvals && l.approvals.secretary;
+    const chairApp = l.approvals && l.approvals.chairman;
+    approvalHtml = `
+    <div class="minute-box" style="background:${l.finalApproved ? 'rgba(63,140,88,0.14)':'var(--minute-bg)'}; border-color:${l.finalApproved ? '#3F8C58':'var(--brass-soft)'};">
+      <div class="mtitle">${l.finalApproved ? t('finalApprovedLabel') : t('approvalPendingLabel')}</div>
+      <div class="mline">${t('secretaryApprovalLine')} ${secApp ? '✅ '+t('approvedLabel')+(secApp.note ? ' — '+escapeHtml(secApp.note):'') : '⏳ '+t('pendingApprovalLabel')}</div>
+      ${chairmanNeeded ? `<div class="mline">${t('chairmanApprovalLine')} ${chairApp ? '✅ '+t('approvedLabel')+(chairApp.note ? ' — '+escapeHtml(chairApp.note):'') : '⏳ '+t('pendingApprovalLabel')}</div>` : `<div class="mline" style="color:var(--muted); font-style:italic;">${t('chairmanNotRequiredLabel')}</div>`}
+    </div>`;
+  }
+
+  const canForward = l.status==='minuted' && (session.role==='secretary' || (session.role==='dept' && l.dept===session.dept));
+  const canSecApprove = session.role==='secretary' && l.completed && !(l.approvals && l.approvals.secretary);
+  const canChairApprove = chairmanViewingApproval && chairmanNeeded && !(l.approvals && l.approvals.chairman);
+  const canEdit = session.role==='secretary' || (session.role==='dispatch' && l.uploadedBy==='dispatch' && l.status==='pending');
+  const canArchive = session.role==='secretary' && l.finalApproved;
+
+  container.innerHTML = `
+    <h2>${escapeHtml(l.subject)}</h2>
+    <div class="letter-meta" style="margin-bottom:6px;"><span>${t('senderMetaLabel')} ${escapeHtml(l.sender)}</span><span>${t('dateMetaLabel')} ${l.date}</span></div>
+    <div class="ref-preview">${t('refPrefix')} ${l.ref}</div>
+    ${priorityHtml}
+    ${l.archived ? `<div style="margin-top:8px;"><span class="forwarded-tag">📦 ${t('archivedLabel')}</span></div>` : ''}
+    ${l.notes ? `<p style="margin-top:12px; font-size:14px; color:var(--text);">${escapeHtml(l.notes)}</p>` : ''}
+    ${minuteHtml}
+    ${approvalHtml}
+    ${fileHtml}
+    ${attachHtml}
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="printLetter('${l.id}')">${t('printBtnLabel')}</button>
+      ${canEdit ? `<button class="btn btn-ghost" onclick="openEditModal('${l.id}')">${t('editBtnLabel')}</button>` : ''}
+      ${canArchive ? (l.archived ? `<button class="btn btn-ghost" onclick="archiveLetter('${l.id}', false)">${t('unarchiveBtnLabel')}</button>` : `<button class="btn btn-ghost" onclick="archiveLetter('${l.id}', true)">📦 ${t('archiveBtnLabel')}</button>`) : ''}
+      ${session.role==='secretary' ? `<button class="btn btn-ghost" onclick="deleteLetter('${l.id}')">${t('deleteBtnLabel')}</button>` : ''}
+      ${canForward ? `<button class="btn btn-ghost" onclick="openForwardModal('${l.id}')" style="color:var(--brass); font-weight:700;">↪ ${t('forwardBtnLabel')}</button>` : ''}
+      ${(session.role==='dept' && l.status==='minuted' && !l.completed && !l.forwarded && l.dept===session.dept) ? `<button class="btn btn-primary" onclick="markComplete('${l.id}')" style="background:#3F8C58;">${t('markCompleteBtn')}</button>` : ''}
+      ${canSecApprove ? `<button class="btn btn-primary" onclick="openApprovalModal('${l.id}','secretary')" style="background:#3F8C58;">✅ ${t('giveSecretaryApprovalBtn')}</button>` : ''}
+      ${canChairApprove ? `<button class="btn btn-primary" onclick="openApprovalModal('${l.id}','chairman')" style="background:#3F8C58;">✅ ${t('giveChairmanApprovalBtn')}</button>` : ''}
+      <button class="btn btn-primary" onclick="closeDetailModal()">${t('closeBtn')}</button>
+    </div>`;
+}
+function closeDetailModal(){ document.getElementById('detailOverlay').classList.remove('show'); }
+
+async function handleExtraFile(evt){
+  const file = evt.target.files[0];
+  const letterId = evt.target.dataset.letterId;
+  if(!file || !letterId) return;
+  const l = await loadFullLetter(letterId);
+  if(!l) return;
+  const isImage = file.type.startsWith('image/');
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    let entry;
+    if(isImage){
+      const img = new Image();
+      img.onload = async ()=>{
+        const canvas = document.createElement('canvas');
+        const maxW = 1100;
+        const scale = Math.min(1, maxW/img.width);
+        canvas.width = img.width*scale; canvas.height = img.height*scale;
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        entry = { data: canvas.toDataURL('image/jpeg',0.72), type:'image', name:file.name };
+        l.extraFiles = l.extraFiles || [];
+        l.extraFiles.push(entry);
+        await saveFullLetter(l);
+        openDetail(letterId);
+      };
+      img.src = e.target.result;
+    }else{
+      entry = { data: e.target.result, type:'pdf', name:file.name };
+      l.extraFiles = l.extraFiles || [];
+      l.extraFiles.push(entry);
+      await saveFullLetter(l);
+      openDetail(letterId);
+    }
+  };
+  reader.readAsDataURL(file);
+  evt.target.value = '';
+}
+
+async function quickPreviewExtra(letterId, idx){
+  const body = document.getElementById('quickPreviewBody');
+  body.innerHTML = `<div class="loading-spinner">${t('quickLoadingText')}</div>`;
+  document.getElementById('quickPreviewOverlay').classList.add('show');
+  const l = await loadFullLetter(letterId);
+  if(!l || !l.extraFiles || !l.extraFiles[idx]){ body.innerHTML = `<div class="empty">${t('quickLoadFailText')}</div>`; return; }
+  const f = l.extraFiles[idx];
+  const fileHtml = f.type==='image'
+    ? `<img src="${f.data}" style="width:100%; border-radius:8px; display:block;">`
+    : `<iframe src="${dataURLtoBlobURL(f.data)}" style="width:100%; height:520px; border:none; border-radius:8px;"></iframe>`;
+  body.innerHTML = `${fileHtml}<div class="modal-actions"><button class="btn btn-primary" onclick="closeQuickPreview()">${t('closeBtn')}</button></div>`;
+}
+
+async function markComplete(id){
+  if(session.role!=='dept') return;
+  const l = await loadFullLetter(id);
+  if(!l || l.dept!==session.dept) return;
+  l.completed = true;
+  l.completedAt = Date.now();
+  l.completedByName = session.officerName || null;
+  l.approvals = l.approvals || { secretary:null, chairman:null };
+  l.finalApproved = false;
+  await saveFullLetter(l);
+  updateIndexEntry(id, { completed:true, finalApproved:false, completedAt:l.completedAt });
+  await saveIndex();
+  openDetail(id);
+  renderSidebar();
+  renderMain();
+}
+
+/* ---------- Final approval (Secretary + Chairman sign-off) ---------- */
+function openApprovalModal(id, role){
+  const title = role==='secretary' ? t('giveSecretaryApprovalBtn') : t('giveChairmanApprovalBtn');
+  showInputModal(title, '', t('approvalNotePh'), async (note)=>{
+    await giveApproval(id, role, note);
+  });
+}
+async function giveApproval(id, role, note){
+  const l = await loadFullLetter(id);
+  if(!l) return;
+  l.approvals = l.approvals || { secretary:null, chairman:null };
+  l.approvals[role] = { note: note||'', by: role==='secretary' ? t('roleSecretary') : session.dept, at: Date.now() };
+  const chairmanNeeded = l.requiresChairman !== false;
+  if(chairmanNeeded ? (l.approvals.secretary && l.approvals.chairman) : !!l.approvals.secretary){
+    l.finalApproved = true;
+  }
+  await saveFullLetter(l);
+  updateIndexEntry(id, {
+    finalApproved: l.finalApproved || false,
+    secApproved: !!l.approvals.secretary,
+    chairApproved: !!l.approvals.chairman
+  });
+  await saveIndex();
+  openDetail(id);
+  renderSidebar();
+  renderMain();
+}
+
+/* ---------- Forward (route the same letter onward to another department and/or multiple officers) ---------- */
+async function openForwardModal(id){
+  const l = await loadFullLetter(id);
+  if(!l) return;
+  forwardSourceLetter = l;
+  forwardRowCount = 0;
+  document.getElementById('forwardLetterPreview').innerHTML = `
+    <div class="letter-subject" style="font-size:15px; color:var(--text);">${escapeHtml(l.subject)}</div>
+    <div>${t('refPrefix')} ${escapeHtml(l.ref)} — ${t('currentlyAtLabel')} <b>${escapeHtml(l.dept)}</b>${l.assignedOfficer ? ' / '+escapeHtml(l.assignedOfficer) : ''}</div>
+  `;
+  document.getElementById('forwardTargetsList').innerHTML = '';
+  document.getElementById('forwardNote').value = '';
+  addForwardRow();
+  document.getElementById('forwardOverlay').classList.add('show');
+}
+function closeForwardModal(){ document.getElementById('forwardOverlay').classList.remove('show'); forwardSourceLetter = null; }
+
+function addForwardRow(){
+  forwardRowCount++;
+  const rowId = 'fwdrow'+forwardRowCount;
+  const wrap = document.createElement('div');
+  wrap.className = 'fwd-row';
+  wrap.id = rowId;
+  const deptOptions = `<option value="__secretary__">↩ ${t('sendBackToSecretaryOption')}</option>` +
+    departments.map(d=>`<option value="${escapeAttr(d.name)}">${escapeHtml(d.name)}</option>`).join('');
+  wrap.innerHTML = `
+    <select class="fwd-dept" onchange="onForwardDeptChange(this)">${deptOptions}</select>
+    <input type="text" class="fwd-officer" placeholder="${escapeAttr(t('officerPh'))}">
+    <button type="button" class="fwd-remove" onclick="removeForwardRow('${rowId}')" title="Remove">✕</button>
+  `;
+  document.getElementById('forwardTargetsList').appendChild(wrap);
+}
+function onForwardDeptChange(sel){
+  const row = sel.closest('.fwd-row');
+  const officerInput = row.querySelector('.fwd-officer');
+  if(sel.value === '__secretary__'){
+    officerInput.style.display = 'none';
+    officerInput.value = '';
+  }else{
+    officerInput.style.display = 'block';
+  }
+}
+function removeForwardRow(rowId){
+  const rows = document.querySelectorAll('#forwardTargetsList .fwd-row');
+  if(rows.length <= 1) return; // keep at least one row
+  const el = document.getElementById(rowId);
+  if(el) el.remove();
+}
+
+async function submitForward(){
+  const src = forwardSourceLetter;
+  if(!src) return;
+  const note = document.getElementById('forwardNote').value.trim();
+  const rows = document.querySelectorAll('#forwardTargetsList .fwd-row');
+  const targets = [];
+  rows.forEach(row=>{
+    const dept = row.querySelector('.fwd-dept').value;
+    const officer = row.querySelector('.fwd-officer').value.trim();
+    if(!dept) return;
+    if(dept === '__secretary__'){ targets.push({toSecretary:true}); }
+    else if(officer){ targets.push({dept, officer, toSecretary:false}); }
+  });
+  if(targets.length===0){ showAlertModal(t('fillDeptOfficer')); return; }
+
+  const originalId = src.originalId || src.id;
+  const now = Date.now();
+
+  for(let i=0;i<targets.length;i++){
+    const tgt = targets[i];
+    const newId = 'L'+now+'_'+i;
+
+    if(tgt.toSecretary){
+      const newRecord = {
+        id:newId, ref:src.ref, subject:src.subject, sender:src.sender, senderPhone:src.senderPhone||null,
+        date:src.date, notes: note || src.notes, fileData:src.fileData, fileType:src.fileType, fileName:src.fileName,
+        status:'pending', dept:null, assignedOfficer:null, minuteNote:null, minutedAt:null,
+        completed:false, uploadedBy:src.uploadedBy, read:false, createdAt:now, isPriority: src.isPriority||false,
+        extraFiles: src.extraFiles||[], originalId, parentId:src.id, forwardedFromDept: src.dept
+      };
+      await saveFullLetter(newRecord);
+      letterIndex.push({
+        id:newId, ref:src.ref, subject:src.subject, sender:src.sender, senderPhone:src.senderPhone||null, date:src.date,
+        dept:null, assignedOfficer:null, status:'pending', uploadedBy:src.uploadedBy,
+        read:false, createdAt:now, fileType:src.fileType, thumb:src.fileType==='image' ? src.fileData : null,
+        completed:false, isPriority: src.isPriority||false, forwardedFromDept: src.dept
+      });
+    }else{
+      const newRecord = {
+        id:newId, ref:src.ref, subject:src.subject, sender:src.sender, senderPhone:src.senderPhone||null,
+        date:src.date, notes:src.notes, fileData:src.fileData, fileType:src.fileType, fileName:src.fileName,
+        status:'minuted', dept:tgt.dept, assignedOfficer:tgt.officer, minuteNote:note, minutedAt:now,
+        completed:false, uploadedBy:src.uploadedBy, read:false, createdAt:now,
+        originalId, parentId:src.id, forwardedFromDept: src.dept, requiresChairman: src.requiresChairman!==false
+      };
+      await saveFullLetter(newRecord);
+      letterIndex.push({
+        id:newId, ref:src.ref, subject:src.subject, sender:src.sender, senderPhone:src.senderPhone||null, date:src.date,
+        dept:tgt.dept, assignedOfficer:tgt.officer, status:'minuted', uploadedBy:src.uploadedBy,
+        read:false, createdAt:now, fileType:src.fileType, thumb:src.fileType==='image' ? src.fileData : null,
+        completed:false, forwardedFromDept: src.dept, requiresChairman: src.requiresChairman!==false
+      });
+    }
+  }
+
+  // Mark the source copy as forwarded onward (kept for history, no longer actionable there)
+  src.forwarded = true;
+  await saveFullLetter(src);
+  updateIndexEntry(src.id, { forwarded:true });
+  await saveIndex();
+
+  closeForwardModal();
+  closeDetailModal();
+  renderSidebar();
+  renderMain();
+}
+
+function deleteLetter(id){
+  if(session.role!=='secretary') return;
+  showConfirmModal(t('confirmDeleteLetter'), async ()=>{
+    await safeDelete('letter:'+id, true);
+    letterIndex = letterIndex.filter(l=>l.id!==id);
+    await saveIndex();
+    closeDetailModal();
+    renderSidebar();
+    renderMain();
+  });
+}
+
+async function openEditModal(id){
+  const l = await loadFullLetter(id);
+  if(!l) return;
+  const allowed = session.role==='secretary' || (session.role==='dispatch' && l.uploadedBy==='dispatch' && l.status==='pending');
+  if(!allowed) return;
+  editTargetId = id;
+  document.getElementById('eSubject').value = l.subject || '';
+  document.getElementById('eSender').value = l.sender || '';
+  document.getElementById('ePhone').value = l.senderPhone || '';
+  document.getElementById('eDate').value = l.date || '';
+  document.getElementById('eNotes').value = l.notes || '';
+  document.getElementById('editOverlay').classList.add('show');
+}
+function closeEditModal(){ document.getElementById('editOverlay').classList.remove('show'); editTargetId = null; }
+async function saveEditedLetter(){
+  const id = editTargetId;
+  if(!id) return;
+  const subject = document.getElementById('eSubject').value.trim();
+  const sender = document.getElementById('eSender').value.trim();
+  const phone = document.getElementById('ePhone').value.trim();
+  const date = document.getElementById('eDate').value;
+  const notes = document.getElementById('eNotes').value.trim();
+  if(!subject || !sender || !date){ showAlertModal(t('fillSubjectSenderDate')); return; }
+
+  const l = await loadFullLetter(id);
+  if(!l) return;
+  const allowed = session.role==='secretary' || (session.role==='dispatch' && l.uploadedBy==='dispatch' && l.status==='pending');
+  if(!allowed) return;
+  l.subject = subject; l.sender = sender; l.senderPhone = phone || null; l.date = date; l.notes = notes;
+  await saveFullLetter(l);
+  updateIndexEntry(id, { subject, sender, senderPhone: phone || null, date });
+  await saveIndex();
+
+  closeEditModal();
+  closeDetailModal();
+  renderMain();
+}
+
+async function printLetter(id){
+  const l = await loadFullLetter(id);
+  if(!l) return;
+  const fileHtml = l.fileType==='image'
+    ? `<img src="${l.fileData}" style="width:100%; max-width:650px; display:block; margin-top:16px;">`
+    : `<iframe src="${dataURLtoBlobURL(l.fileData)}" style="width:100%; height:700px; border:1px solid #ccc; margin-top:16px;"></iframe>`;
+  const minuteHtml = l.status==='minuted' ? `
+    <div style="border:1px solid #B0803A; background:#F4EEDD; border-radius:6px; padding:12px 14px; margin-top:16px; font-size:13px;">
+      <div style="font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:1px; color:#8a5f22; margin-bottom:6px;">ලේකම්තුමාගේ සටහන</div>
+      <div><b>යොමු කළ අංශය:</b> ${escapeHtml(l.dept)}</div>
+      <div><b>අදාළ නිලධාරියා:</b> ${escapeHtml(l.assignedOfficer||'-')}</div>
+      ${l.minuteNote ? `<div><b>උපදෙස්:</b> ${escapeHtml(l.minuteNote)}</div>` : ''}
+    </div>` : '';
+
+  const printContent = `
+    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(l.ref)}</title>
+    <style>
+      body{ font-family: Arial, sans-serif; color:#20241F; padding:30px; max-width:750px; margin:0 auto; }
+      .letterhead{ display:flex; align-items:center; gap:10px; border-bottom:2px solid #A9793A; padding-bottom:10px; margin-bottom:18px; }
+      .letterhead img{ width:44px; height:44px; border-radius:50%; object-fit:cover; border:1.5px solid #C79A54; }
+      .letterhead .lh-org{ font-family: Georgia, serif; font-size:15px; font-weight:700; color:#132233; }
+      h1{ font-size:20px; margin-bottom:4px; }
+      .meta{ font-size:13px; color:#555; margin-bottom:14px; }
+      .meta span{ margin-right:16px; }
+      .ref{ font-family: monospace; font-size:12px; color:#A23B3E; margin-bottom:10px; }
+    </style></head><body>
+      <div class="letterhead"><img src="${ORG_LOGO}" alt="Seal"><span class="lh-org">${escapeHtml(orgName)}</span></div>
+      <h1>${escapeHtml(l.subject)}</h1>
+      <div class="meta"><span>👤 ${escapeHtml(l.sender)}</span><span>📅 ${l.date}</span></div>
+      <div class="ref">යොමු අංකය: ${l.ref}</div>
+      ${l.notes ? `<p>${escapeHtml(l.notes)}</p>` : ''}
+      ${minuteHtml}
+      ${fileHtml}
+    </body></html>
+  `;
+
+  const old = document.getElementById('printFrame');
+  if(old) old.remove();
+  const iframe = document.createElement('iframe');
+  iframe.id = 'printFrame';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+  const doc = iframe.contentWindow.document;
+  doc.open(); doc.write(printContent); doc.close();
+  iframe.onload = ()=>{ setTimeout(()=>{ iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 200); };
+}
+
+function openPinManager(){
+  if(session.role!=='secretary') return;
+  document.getElementById('orgNamePinDisplay').textContent = orgName;
+  document.getElementById('secretaryPinDisplay').textContent = secretaryPin;
+  document.getElementById('dispatchPinDisplay').textContent = dispatchPin;
+  const list = document.getElementById('pinList');
+  list.innerHTML = departments.map(d=>`
+    <div class="pin-row"><span>${d.isChairman ? '🏛 ' : ''}${escapeHtml(d.name)}: <span class="code">${escapeHtml(d.pin)}</span></span><span><span class="reset-link" onclick="changeDeptPin('${escapeAttr(d.name)}')">${t('changeBtn')}</span> &nbsp;|&nbsp; <span class="reset-link" onclick="toggleChairman('${escapeAttr(d.name)}')">${d.isChairman ? t('unsetChairmanBtn') : t('setChairmanBtn')}</span> &nbsp;|&nbsp; <span class="reset-link" style="color:var(--stamp-red);" onclick="removeDept('${escapeAttr(d.name)}')">${t('deleteBtnLabel')}</span></span></div>`).join('');
+  document.getElementById('pinOverlay').classList.add('show');
+}
+function closePinManager(){ document.getElementById('pinOverlay').classList.remove('show'); }
+async function toggleChairman(name){
+  const d = departments.find(x=>x.name===name);
+  if(!d) return;
+  const turningOn = !d.isChairman;
+  departments.forEach(x=>{ x.isChairman = false; });
+  if(turningOn) d.isChairman = true;
+  await safeSet('departments', JSON.stringify(departments), true);
+  openPinManager();
+  renderSidebar();
+}
+function changeOrgName(){
+  showInputModal(t('orgNameLabel'), orgName, t('orgNamePh'), async (val)=>{
+    if(!val) return;
+    orgName = val;
+    await safeSet('org-name', orgName, true);
+    const disp = document.getElementById('orgNameDisplay');
+    if(disp) disp.textContent = orgName;
+    const sidebarDisp = document.getElementById('sidebarOrgName');
+    if(sidebarDisp) sidebarDisp.textContent = orgName;
+    openPinManager();
+  });
+}
+function changeSecretaryPin(){
+  showInputModal('අලුත් ලේකම් PIN එක', secretaryPin, 'PIN එක', async (val)=>{
+    if(!val) return;
+    secretaryPin = val;
+    await safeSet('secretary-pin', secretaryPin, true);
+    openPinManager();
+  });
+}
+function changeDispatchPin(){
+  showInputModal('අලුත් Dispatcher PIN එක', dispatchPin, 'PIN එක', async (val)=>{
+    if(!val) return;
+    dispatchPin = val;
+    await safeSet('dispatch-pin', dispatchPin, true);
+    openPinManager();
+  });
+}
+function changeDeptPin(name){
+  const d = departments.find(x=>x.name===name);
+  if(!d) return;
+  showInputModal(`${name} සඳහා අලුත් PIN එක`, d.pin, 'PIN එක', async (val)=>{
+    if(!val) return;
+    d.pin = val;
+    await safeSet('departments', JSON.stringify(departments), true);
+    openPinManager();
+  });
+}
+function removeDept(name){
+  showConfirmModal(t('confirmDeleteDept',{name}), async ()=>{
+    departments = departments.filter(d=>d.name!==name);
+    await safeSet('departments', JSON.stringify(departments), true);
+    populateLoginDeptSelect();
+    populateMinuteDeptSelect();
+    renderSidebar();
+    openPinManager();
+  });
+}
+
+/* ---------- Data Export (backup) ---------- */
+function openExportModal(){
+  if(session.role!=='secretary') return;
+  document.getElementById('exportStatus').textContent = '';
+  document.getElementById('exportOverlay').classList.add('show');
+}
+function closeExportModal(){ document.getElementById('exportOverlay').classList.remove('show'); }
+
+function triggerDownload(filename, mimeType, content){
+  try{
+    const blob = new Blob([content], {type:mimeType});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+    return true;
+  }catch(e){
+    console.error('download failed', e);
+    return false;
+  }
+}
+
+async function exportJSON(){
+  const statusEl = document.getElementById('exportStatus');
+  statusEl.textContent = lang==='si' ? 'සකසමින්...' : 'Preparing...';
+  const fullLetters = [];
+  for(const entry of letterIndex){
+    const full = await loadFullLetter(entry.id);
+    if(full) fullLetters.push(full);
+  }
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    orgName, departments, letters: fullLetters, outgoingLetters
+  };
+  const ok = triggerDownload(`letters-backup-${new Date().toISOString().slice(0,10)}.json`, 'application/json', JSON.stringify(payload, null, 2));
+  statusEl.textContent = ok ? (lang==='si' ? '✅ Download කරන ලදී.' : '✅ Downloaded.') : (lang==='si' ? '⚠️ මෙය Claude preview එකේදී වැඩ නොකළ හැක. app එක host කළ පසු උත්සාහ කරන්න.' : '⚠️ This may not work inside the Claude preview. Try again once the app is hosted.');
+}
+
+async function exportCSV(){
+  const statusEl = document.getElementById('exportStatus');
+  statusEl.textContent = lang==='si' ? 'සකසමින්...' : 'Preparing...';
+  const cols = ['ref','subject','sender','senderPhone','date','dept','assignedOfficer','status','isPriority','completed','finalApproved','minuteNote'];
+  const esc = (v)=>{
+    const s = (v===null||v===undefined) ? '' : String(v);
+    return '"' + s.replace(/"/g,'""') + '"';
+  };
+  let csv = cols.join(',') + '\n';
+  letterIndex.forEach(l=>{
+    csv += cols.map(c=>esc(l[c])).join(',') + '\n';
+  });
+  const ok = triggerDownload(`letters-summary-${new Date().toISOString().slice(0,10)}.csv`, 'text/csv', '\uFEFF'+csv);
+  statusEl.textContent = ok ? (lang==='si' ? '✅ Download කරන ලදී.' : '✅ Downloaded.') : (lang==='si' ? '⚠️ මෙය Claude preview එකේදී වැඩ නොකළ හැක. app එක host කළ පසු උත්සාහ කරන්න.' : '⚠️ This may not work inside the Claude preview. Try again once the app is hosted.');
+}
+
+/* ---------- Outgoing Letters Register ---------- */
+async function loadOutgoing(){
+  const raw = await safeGet('outgoing-letters', true);
+  outgoingLetters = raw ? JSON.parse(raw) : [];
+}
+async function saveOutgoing(){
+  await safeSet('outgoing-letters', JSON.stringify(outgoingLetters), true);
+}
+function openOutgoingModal(){
+  if(session.role!=='secretary') return;
+  document.getElementById('ogRef').value = 'OUT-'+new Date().getFullYear()+'-'+String(outgoingLetters.length+1).padStart(4,'0');
+  document.getElementById('ogSubject').value = '';
+  document.getElementById('ogRecipient').value = '';
+  document.getElementById('ogSentVia').value = '';
+  document.getElementById('ogDate').valueAsDate = new Date();
+  document.getElementById('ogNotes').value = '';
+  const replySel = document.getElementById('ogReplyTo');
+  const noneLabel = t('replyToNone');
+  replySel.innerHTML = `<option value="">${noneLabel}</option>` + letterIndex.slice().sort((a,b)=>b.createdAt-a.createdAt).map(l=>`<option value="${escapeAttr(l.ref)}">${escapeAttr(l.ref)} — ${escapeHtml(l.subject).slice(0,40)}</option>`).join('');
+  document.getElementById('outgoingOverlay').classList.add('show');
+}
+function closeOutgoingModal(){ document.getElementById('outgoingOverlay').classList.remove('show'); }
+async function submitOutgoing(){
+  const ref = document.getElementById('ogRef').value.trim();
+  const subject = document.getElementById('ogSubject').value.trim();
+  const recipient = document.getElementById('ogRecipient').value.trim();
+  const sentVia = document.getElementById('ogSentVia').value.trim();
+  const date = document.getElementById('ogDate').value;
+  const notes = document.getElementById('ogNotes').value.trim();
+  const replyToRef = document.getElementById('ogReplyTo').value;
+  if(!subject || !recipient || !date){ showAlertModal(t('fillSubjectSenderDate')); return; }
+  outgoingLetters.push({ id:'OG'+Date.now(), ref, subject, recipient, sentVia, date, notes, replyToRef: replyToRef||null, createdAt:Date.now() });
+  await saveOutgoing();
+  closeOutgoingModal();
+  renderSidebar();
+  renderMain();
+}
+function deleteOutgoing(id){
+  showConfirmModal(t('confirmDeleteLetter'), async ()=>{
+    outgoingLetters = outgoingLetters.filter(o=>o.id!==id);
+    await saveOutgoing();
+    renderSidebar();
+    renderMain();
+  });
+}
+function renderOutgoing(){
+  const title = document.getElementById('pageTitle');
+  const sub = document.getElementById('pageSub');
+  const container = document.getElementById('letterList');
+  title.textContent = t('outgoingLabel');
+  sub.textContent = t('outgoingSub');
+
+  const list = outgoingLetters.slice().sort((a,b)=>b.createdAt-a.createdAt);
+  const addBtnHtml = `<button class="new-btn" style="margin:0 0 16px 0; width:auto; display:inline-block;" onclick="openOutgoingModal()">${t('outgoingAddBtn')}</button>`;
+
+  if(list.length===0){
+    container.innerHTML = addBtnHtml + `<div class="empty">${t('emptyLetters')}</div>`;
+    return;
+  }
+  container.innerHTML = addBtnHtml + list.map(o=>`
+    <div class="letter-card">
+      <div class="letter-info">
+        <div class="letter-subject">${escapeHtml(o.subject)}</div>
+        <div class="letter-meta"><span>📤 ${escapeHtml(o.recipient)}</span><span>${t('dateMetaLabel')} ${o.date}</span>${o.sentVia?`<span>🚚 ${escapeHtml(o.sentVia)}</span>`:''}</div>
+        ${o.replyToRef ? `<span class="forwarded-tag">↩ ${t('replyToTagLabel',{ref:escapeHtml(o.replyToRef)})}</span>` : ''}
+        ${o.notes ? `<p style="font-size:12.5px; color:var(--muted); margin-top:6px;">${escapeHtml(o.notes)}</p>` : ''}
+      </div>
+      <div class="stamp">OUT<br>${escapeHtml(o.ref||'-')}</div>
+      <button class="btn btn-ghost" style="flex-shrink:0;" onclick="deleteOutgoing('${o.id}')">${t('deleteBtnLabel')}</button>
+    </div>`).join('');
+}
+
+/* ---------- Register Print (printable log of letters in a date range) ---------- */
+function openRegisterModal(){
+  if(session.role!=='secretary') return;
+  document.getElementById('regDateFrom').value = dateFrom || '';
+  document.getElementById('regDateTo').value = dateTo || '';
+  document.getElementById('registerOverlay').classList.add('show');
+}
+function closeRegisterModal(){ document.getElementById('registerOverlay').classList.remove('show'); }
+function printRegister(){
+  const from = document.getElementById('regDateFrom').value;
+  const to = document.getElementById('regDateTo').value;
+  let list = letterIndex.slice();
+  if(from){ list = list.filter(l=>l.date >= from); }
+  if(to){ list = list.filter(l=>l.date <= to); }
+  list.sort((a,b)=> (a.date||'').localeCompare(b.date||'') || a.createdAt-b.createdAt);
+
+  const rows = list.map((l,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${escapeHtml(l.ref)}</td>
+      <td>${escapeHtml(l.date)}</td>
+      <td>${escapeHtml(l.subject)}</td>
+      <td>${escapeHtml(l.sender)}</td>
+      <td>${escapeHtml(l.dept||'-')}</td>
+      <td>${escapeHtml(l.assignedOfficer||'-')}</td>
+      <td>${l.finalApproved ? t('finalApprovedLabel') : (l.completed ? t('statusCompleted') : (l.status==='minuted' ? t('statusInProgress') : t('statusPending')))}</td>
+    </tr>`).join('');
+
+  const rangeLabel = (from||to) ? `${from||'—'} ${t('dateToLabel')} ${to||'—'}` : t('allViewTitle');
+  const printContent = `
+    <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Register</title>
+    <style>
+      body{ font-family: Arial, sans-serif; padding:24px; color:#20241F; }
+      .rhead{ display:flex; align-items:center; gap:10px; border-bottom:2px solid #A9793A; padding-bottom:10px; margin-bottom:14px; }
+      .rhead img{ width:40px; height:40px; border-radius:50%; object-fit:cover; border:1.5px solid #C79A54; }
+      .rhead .rorg{ font-family: Georgia, serif; font-size:15px; font-weight:700; }
+      h2{ font-size:17px; margin:0 0 2px 0; }
+      .rsub{ font-size:12px; color:#555; margin-bottom:14px; }
+      table{ width:100%; border-collapse:collapse; font-size:11px; }
+      th, td{ border:1px solid #ccc; padding:5px 6px; text-align:left; }
+      th{ background:#F1EFE6; }
+    </style></head><body>
+      <div class="rhead"><img src="${ORG_LOGO}" alt="Seal"><span class="rorg">${escapeHtml(orgName)}</span></div>
+      <h2>${escapeHtml(t('registerTitle'))}</h2>
+      <div class="rsub">${escapeHtml(rangeLabel)} — ${list.length} ${lang==='si'?'ලිපි':'letters'}</div>
+      <table>
+        <thead><tr><th>#</th><th>Ref</th><th>Date</th><th>Subject</th><th>Sender</th><th>Dept</th><th>Officer</th><th>Status</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </body></html>
+  `;
+  const old = document.getElementById('printFrame');
+  if(old) old.remove();
+  const iframe = document.createElement('iframe');
+  iframe.id = 'printFrame';
+  iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0';
+  iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+  document.body.appendChild(iframe);
+  const doc = iframe.contentWindow.document;
+  doc.open(); doc.write(printContent); doc.close();
+  iframe.onload = ()=>{ setTimeout(()=>{ iframe.contentWindow.focus(); iframe.contentWindow.print(); closeRegisterModal(); }, 250); };
+}
+
+/* ---------- Archive ---------- */
+async function archiveLetter(id, archived){
+  const l = await loadFullLetter(id);
+  if(!l) return;
+  l.archived = archived;
+  await saveFullLetter(l);
+  updateIndexEntry(id, { archived });
+  await saveIndex();
+  closeDetailModal();
+  renderSidebar();
+  renderMain();
+}
+
+init();
+</script>
+</body>
+</html>
