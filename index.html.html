@@ -318,6 +318,7 @@
     <img class="org-seal-img" alt="Seal" style="width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid var(--brass-soft); margin:0 auto 8px auto; display:block; box-shadow:0 3px 10px rgba(0,0,0,0.15);">
     <div id="receiptOrgName" style="font-family:'Noto Serif Sinhala',serif; font-size:14px; font-weight:700; color:var(--brass); margin-bottom:2px;"></div>
     <h2 style="text-align:center;" data-i18n="receiptTitle">ලිපිය ලැබුණි ✅</h2>
+    <p style="font-size:13px; color:var(--brass); font-weight:700; margin:-6px 0 4px 0;" data-i18n="sentToSecretaryConfirm">➡️ ලේකම්ගේ window එකට යවන ලදී</p>
     <p id="receiptDescText" style="font-size:13.5px; color:var(--muted); margin-top:-8px;" data-i18n="receiptDesc">මෙම QR code එක හෝ link එක ලිපිය ගෙනාපු පුද්ගලයාට දෙන්න. ඔවුන්ට ලිපියේ තත්ත්වය එමගින් පරීක්ෂා කළ හැක.</p>
 
     <div id="receiptBigRef" style="display:none; background:var(--minute-bg); border:1.5px dashed var(--brass-soft); border-radius:10px; padding:18px; margin:14px 0;">
@@ -433,10 +434,14 @@
   <div class="modal">
     <h2 data-i18n="forwardTitle">ලිපිය ඉදිරියට යවන්න (Forward)</h2>
     <div id="forwardLetterPreview" style="font-size:13px; color:var(--muted); margin-bottom:8px;"></div>
-    <div id="forwardTargetsList"></div>
-    <button class="add-dept" style="margin:10px 0 0 0; width:100%;" onclick="addForwardRow()" data-i18n="addForwardRowBtn">+ තවත් නිලධාරියෙක් / අංශයක් එකතු කරන්න</button>
-    <label data-i18n="forwardNoteLabel">සටහන (සියලුම ලබන්නන්ට පොදුවේ පෙන්වයි)</label>
+    <label style="margin-top:14px;" data-i18n="forwardToLabel">යවන්නේ කාටද</label>
+    <select id="fwdDept" onchange="onForwardDeptChange(this)">
+      <option value="__secretary__" data-i18n="sendBackToSecretaryOption">↩ ලේකම් වෙත (නැවත සමාලෝචනය සඳහා)</option>
+    </select>
+    <input type="text" id="fwdOfficer" style="margin-top:10px;" data-i18n-ph="officerPh" placeholder="උදා: කේ. පෙරේරා මහතා">
+    <label data-i18n="forwardNoteLabel">සටහන</label>
     <textarea id="forwardNote" placeholder="උදා: කරුණාකර පරීක්ෂා කර කටයුතු කරන්න." data-i18n-ph="forwardNotePh"></textarea>
+    <div class="note-small" data-i18n="forwardSingleNote">ලිපිය ඉදිරියට යවූ පසු, එය දැනට ඇති ස්ථානයෙන් ඉවත් වී යවන ලද තැන පමණක් පෙන්වයි (copy දෙකක් නොවේ).</div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeForwardModal()" data-i18n="cancelBtn">අවලංගු කරන්න</button>
       <button class="btn btn-primary" onclick="submitForward()" data-i18n="forwardSendBtn">ඉදිරියට යවන්න</button>
@@ -616,7 +621,9 @@ const T = {
     receiptDesc:'මෙම QR code එක හෝ link එක ලිපිය ගෙනාපු පුද්ගලයාට දෙන්න. ඔවුන්ට ලිපියේ තත්ත්වය එමගින් පරීක්ෂා කළ හැක.',
     copyBtn:'📋 Copy', printReceiptBtn:'🖨️ Receipt Print කරන්න',
     logoutLink:'ලොග් අවුට් වන්න',
-    dispatchViewTitle:'ඔබ Upload කළ ලිපි', dispatchViewSub:'ලේකම් විසින් සටහන යොදා යවනු ලබන තුරු මෙහි "පොරොත්තුවේ" පෙන්වයි',
+    dispatchViewTitle:'ලිපි ඇතුළත් කිරීම', dispatchViewSub:'ලිපියක් යැවූ පසු, එය ඔබේ window එකෙන් ඉවත් වී ලේකම්ගේ window එකේ පමණක් පෙනේ.',
+    dispatchEmptyNote:'ලිපියක් ඇතුළත් කිරීමට "+ අලුත් ලිපියක්" click කරන්න. යැවූ සැණින්, එය ලේකම්ගේ window එකට යනු ඇත — මෙතැන පෙනෙන්නේ නැත.',
+    sentToSecretaryConfirm:'➡️ ලේකම්ගේ window එකට යවන ලදී',
     pendingViewTitle:'පොරොත්තු ලිපි', pendingViewSub:'සටහන යොදා අදාළ අංශයට හා නිලධාරියාට යොමු කිරීමට ඇති ලිපි',
     allViewTitle:'සියලුම ලිපි', allViewSub:'ලැබී ඇති සියලුම ලිපි',
     deptViewSub:'මෙම අංශයට යොමු කර ඇති ලිපි', deptOfficerSub:'ලේකම් විසින් මෙම අංශයට යොමු කර ඇති ලිපි',
@@ -651,6 +658,8 @@ const T = {
     forwardTitle:'ලිපිය ඉදිරියට යවන්න (Forward)', addForwardRowBtn:'+ තවත් නිලධාරියෙක් / අංශයක් එකතු කරන්න',
     forwardNoteLabel:'සටහන (සියලුම ලබන්නන්ට පොදුවේ පෙන්වයි)', forwardNotePh:'උදා: කරුණාකර පරීක්ෂා කර කටයුතු කරන්න.',
     forwardSendBtn:'ඉදිරියට යවන්න', forwardBtnLabel:'ඉදිරියට යවන්න (Forward)', sendBackToSecretaryOption:'ලේකම් වෙත (නැවත සමාලෝචනය සඳහා)',
+    forwardToLabel:'යවන්නේ කාටද', forwardSingleNote:'ලිපිය ඉදිරියට යවූ පසු, එය දැනට ඇති ස්ථානයෙන් ඉවත් වී යවන ලද තැන පමණක් පෙන්වයි (copy දෙකක් නොවේ).',
+    historyHopsLabel:'{count} වතාවක් යොමු කර ඇත', journeyLabel:'ලිපියේ ගමන් මග', currentLabel:'දැනට',
     currentlyAtLabel:'දැනට තිබෙන්නේ:', forwardedFromLabel:'{dept} මගින් යොමු කරන ලදී', forwardedOnwardLabel:'ඉදිරියට යොමු කර ඇත',
     approvalQueueLabel:'අවසාන අනුමැතිය', approvalQueueSub:'කටයුතු අවසන් කර ඇති නමුත් ලේකම්/සභාපති අනුමැතිය පොරොත්තුවේ ඇති ලිපි',
     finalApprovedLabel:'සම්පූර්ණයෙන් අනුමත', approvalPendingLabel:'අවසාන අනුමැතිය පොරොත්තුවේ',
@@ -714,7 +723,9 @@ const T = {
     receiptDesc:'Give this QR code or link to the person who brought the letter. They can use it to check its status.',
     copyBtn:'📋 Copy', printReceiptBtn:'🖨️ Print Receipt',
     logoutLink:'Log out',
-    dispatchViewTitle:'Letters You Uploaded', dispatchViewSub:'Shown here as "Pending" until the Secretary adds a minute and routes it',
+    dispatchViewTitle:'Register a Letter', dispatchViewSub:'Once sent, a letter disappears from your window and appears only in the Secretary\'s window.',
+    dispatchEmptyNote:'Click "+ New Letter" to register one. As soon as it\'s sent, it moves to the Secretary\'s window — it will not appear here.',
+    sentToSecretaryConfirm:'➡️ Sent to the Secretary\'s window',
     pendingViewTitle:'Pending Letters', pendingViewSub:'Letters awaiting a minute and routing to a department and officer',
     allViewTitle:'All Letters', allViewSub:'All letters received',
     deptViewSub:'Letters routed to this department', deptOfficerSub:'Letters routed to this department by the Secretary',
@@ -749,6 +760,8 @@ const T = {
     forwardTitle:'Forward This Letter', addForwardRowBtn:'+ Add another officer / department',
     forwardNoteLabel:'Note (shown to all recipients)', forwardNotePh:'e.g. Please review and action.',
     forwardSendBtn:'Forward', forwardBtnLabel:'Forward', sendBackToSecretaryOption:'Secretary (for re-review)',
+    forwardToLabel:'Forward to', forwardSingleNote:'Once forwarded, the letter moves away from its current location and only shows at the new destination (no duplicate copies).',
+    historyHopsLabel:'Forwarded {count} time(s)', journeyLabel:'Letter Journey', currentLabel:'Current',
     currentlyAtLabel:'Currently at:', forwardedFromLabel:'Forwarded from {dept}', forwardedOnwardLabel:'Forwarded onward',
     approvalQueueLabel:'Final Approval', approvalQueueSub:'Letters where work is complete but awaiting Secretary/Chairman sign-off',
     finalApprovedLabel:'Fully Approved', approvalPendingLabel:'Awaiting final approval',
@@ -1288,9 +1301,12 @@ function renderMain(){
   dateFilterRow.style.display = 'flex';
 
   if(session.role==='dispatch'){
+    searchBox.style.display = 'none';
+    dateFilterRow.style.display = 'none';
     title.textContent = t('dispatchViewTitle');
     sub.textContent = t('dispatchViewSub');
-    list = letterIndex.filter(l=>l.uploadedBy==='dispatch');
+    container.innerHTML = `<div class="empty">📨 ${t('dispatchEmptyNote')}</div>`;
+    return;
   }else if(session.role==='secretary'){
     if(currentView==='__pending__'){
       title.textContent = t('pendingViewTitle');
@@ -1361,7 +1377,7 @@ function renderMain(){
           completedTag = `<span class="status-tag" style="background:rgba(63,140,88,0.16); color:#2c6b41;">${t('statusCompleted')}</span> <span class="status-tag pending" style="margin-left:4px;">🏛 ${t('awaitingApprovalLabel')}</span>`;
         }
       }
-      tagsHtml = priorityTag + `<span class="dept-tag">${l.dept}</span>` + (l.assignedOfficer ? `<span class="officer-tag">👤 ${escapeHtml(l.assignedOfficer)}</span>` : '') + completedTag + overdueTag + (l.forwarded ? `<span class="forwarded-tag">➡ ${t('forwardedOnwardLabel')}</span>` : '') + (l.forwardedFromDept ? `<span class="forwarded-tag">↪ ${t('forwardedFromLabel',{dept:escapeHtml(l.forwardedFromDept)})}</span>` : '');
+      tagsHtml = priorityTag + `<span class="dept-tag">${l.dept}</span>` + (l.assignedOfficer ? `<span class="officer-tag">👤 ${escapeHtml(l.assignedOfficer)}</span>` : '') + completedTag + overdueTag + ((l.history && l.history.length>0) ? `<span class="forwarded-tag">↪ ${t('historyHopsLabel',{count:l.history.length})}</span>` : '');
     }
     return `<div class="letter-card ${cardClass}" onclick="${l.status==='pending' && session.role==='secretary' ? `openMinuteModal('${l.id}')` : `openDetail('${l.id}')`}">
       <div class="thumb-wrap" style="position:relative; flex-shrink:0;">
@@ -1771,6 +1787,13 @@ async function openDetail(id){
 
   const priorityHtml = l.isPriority ? `<div style="margin-top:8px;"><span class="priority-tag">🔴 ${t('priorityLabel')}</span></div>` : '';
 
+  const historyHtml = (l.history && l.history.length>0) ? `
+    <div class="minute-box" style="background:var(--paper);">
+      <div class="mtitle">${t('journeyLabel')}</div>
+      ${l.history.map((h,i)=>`<div class="mline">${i+1}. ${escapeHtml(h.dept||t('roleSecretary'))}${h.officer?' / '+escapeHtml(h.officer):''}${h.note?` — ${escapeHtml(h.note)}`:''}</div>`).join('')}
+      <div class="mline" style="font-weight:700;">${l.history.length+1}. ${escapeHtml(l.dept || t('roleSecretary'))}${l.assignedOfficer?' / '+escapeHtml(l.assignedOfficer):''} <span style="color:var(--brass);">(${t('currentLabel')})</span></div>
+    </div>` : '';
+
   const minuteHtml = l.status==='minuted' ? `
     <div class="minute-box">
       <div class="mtitle">${t('minuteBoxTitle')}</div>
@@ -1778,8 +1801,6 @@ async function openDetail(id){
       <div class="mline"><b>${t('minuteOfficerLine')}</b> ${escapeHtml(l.assignedOfficer||'-')}</div>
       ${l.minuteNote ? `<div class="mline"><b>${t('minuteInstrLine')}</b> ${escapeHtml(l.minuteNote)}</div>` : ''}
       <div class="mline" style="margin-top:8px;"><b>${t('minuteStatusLine')}</b> ${l.completed ? t('statusDone') : t('statusInProgress')}${(l.completed && l.completedByName) ? ` — ${escapeHtml(l.completedByName)}` : ''}</div>
-      ${l.forwardedFromDept ? `<div class="mline" style="margin-top:8px; color:var(--muted);">↪ ${t('forwardedFromLabel',{dept:escapeHtml(l.forwardedFromDept)})}</div>` : ''}
-      ${l.forwarded ? `<div class="mline" style="margin-top:6px; font-weight:700; color:var(--brass);">➡ ${t('forwardedOnwardLabel')}</div>` : ''}
     </div>` : '';
 
   let approvalHtml = '';
@@ -1809,6 +1830,7 @@ async function openDetail(id){
     ${l.archived ? `<div style="margin-top:8px;"><span class="forwarded-tag">📦 ${t('archivedLabel')}</span></div>` : ''}
     ${l.notes ? `<p style="margin-top:12px; font-size:14px; color:var(--text);">${escapeHtml(l.notes)}</p>` : ''}
     ${minuteHtml}
+    ${historyHtml}
     ${approvalHtml}
     ${fileHtml}
     ${attachHtml}
@@ -1818,7 +1840,7 @@ async function openDetail(id){
       ${canArchive ? (l.archived ? `<button class="btn btn-ghost" onclick="archiveLetter('${l.id}', false)">${t('unarchiveBtnLabel')}</button>` : `<button class="btn btn-ghost" onclick="archiveLetter('${l.id}', true)">📦 ${t('archiveBtnLabel')}</button>`) : ''}
       ${session.role==='secretary' ? `<button class="btn btn-ghost" onclick="deleteLetter('${l.id}')">${t('deleteBtnLabel')}</button>` : ''}
       ${canForward ? `<button class="btn btn-ghost" onclick="openForwardModal('${l.id}')" style="color:var(--brass); font-weight:700;">↪ ${t('forwardBtnLabel')}</button>` : ''}
-      ${(session.role==='dept' && l.status==='minuted' && !l.completed && !l.forwarded && l.dept===session.dept) ? `<button class="btn btn-primary" onclick="markComplete('${l.id}')" style="background:#3F8C58;">${t('markCompleteBtn')}</button>` : ''}
+      ${(session.role==='dept' && l.status==='minuted' && !l.completed && l.dept===session.dept) ? `<button class="btn btn-primary" onclick="markComplete('${l.id}')" style="background:#3F8C58;">${t('markCompleteBtn')}</button>` : ''}
       ${canSecApprove ? `<button class="btn btn-primary" onclick="openApprovalModal('${l.id}','secretary')" style="background:#3F8C58;">✅ ${t('giveSecretaryApprovalBtn')}</button>` : ''}
       ${canChairApprove ? `<button class="btn btn-primary" onclick="openApprovalModal('${l.id}','chairman')" style="background:#3F8C58;">✅ ${t('giveChairmanApprovalBtn')}</button>` : ''}
       <button class="btn btn-primary" onclick="closeDetailModal()">${t('closeBtn')}</button>
@@ -1926,36 +1948,22 @@ async function openForwardModal(id){
   const l = await loadFullLetter(id);
   if(!l) return;
   forwardSourceLetter = l;
-  forwardRowCount = 0;
   document.getElementById('forwardLetterPreview').innerHTML = `
     <div class="letter-subject" style="font-size:15px; color:var(--text);">${escapeHtml(l.subject)}</div>
     <div>${t('refPrefix')} ${escapeHtml(l.ref)} — ${t('currentlyAtLabel')} <b>${escapeHtml(l.dept)}</b>${l.assignedOfficer ? ' / '+escapeHtml(l.assignedOfficer) : ''}</div>
   `;
-  document.getElementById('forwardTargetsList').innerHTML = '';
+  const deptSel = document.getElementById('fwdDept');
+  deptSel.innerHTML = `<option value="__secretary__">↩ ${t('sendBackToSecretaryOption')}</option>` +
+    departments.filter(d=>d.name!==l.dept).map(d=>`<option value="${escapeAttr(d.name)}">${escapeHtml(d.name)}</option>`).join('');
+  document.getElementById('fwdOfficer').value = '';
+  document.getElementById('fwdOfficer').style.display = 'block';
   document.getElementById('forwardNote').value = '';
-  addForwardRow();
   document.getElementById('forwardOverlay').classList.add('show');
 }
 function closeForwardModal(){ document.getElementById('forwardOverlay').classList.remove('show'); forwardSourceLetter = null; }
 
-function addForwardRow(){
-  forwardRowCount++;
-  const rowId = 'fwdrow'+forwardRowCount;
-  const wrap = document.createElement('div');
-  wrap.className = 'fwd-row';
-  wrap.id = rowId;
-  const deptOptions = `<option value="__secretary__">↩ ${t('sendBackToSecretaryOption')}</option>` +
-    departments.map(d=>`<option value="${escapeAttr(d.name)}">${escapeHtml(d.name)}</option>`).join('');
-  wrap.innerHTML = `
-    <select class="fwd-dept" onchange="onForwardDeptChange(this)">${deptOptions}</select>
-    <input type="text" class="fwd-officer" placeholder="${escapeAttr(t('officerPh'))}">
-    <button type="button" class="fwd-remove" onclick="removeForwardRow('${rowId}')" title="Remove">✕</button>
-  `;
-  document.getElementById('forwardTargetsList').appendChild(wrap);
-}
 function onForwardDeptChange(sel){
-  const row = sel.closest('.fwd-row');
-  const officerInput = row.querySelector('.fwd-officer');
+  const officerInput = document.getElementById('fwdOfficer');
   if(sel.value === '__secretary__'){
     officerInput.style.display = 'none';
     officerInput.value = '';
@@ -1963,72 +1971,49 @@ function onForwardDeptChange(sel){
     officerInput.style.display = 'block';
   }
 }
-function removeForwardRow(rowId){
-  const rows = document.querySelectorAll('#forwardTargetsList .fwd-row');
-  if(rows.length <= 1) return; // keep at least one row
-  const el = document.getElementById(rowId);
-  if(el) el.remove();
-}
 
 async function submitForward(){
   const src = forwardSourceLetter;
   if(!src) return;
   const note = document.getElementById('forwardNote').value.trim();
-  const rows = document.querySelectorAll('#forwardTargetsList .fwd-row');
-  const targets = [];
-  rows.forEach(row=>{
-    const dept = row.querySelector('.fwd-dept').value;
-    const officer = row.querySelector('.fwd-officer').value.trim();
-    if(!dept) return;
-    if(dept === '__secretary__'){ targets.push({toSecretary:true}); }
-    else if(officer){ targets.push({dept, officer, toSecretary:false}); }
-  });
-  if(targets.length===0){ showAlertModal(t('fillDeptOfficer')); return; }
+  const dept = document.getElementById('fwdDept').value;
+  const officer = document.getElementById('fwdOfficer').value.trim();
+  const toSecretary = dept === '__secretary__';
+  if(!toSecretary && !officer){ showAlertModal(t('fillDeptOfficer')); return; }
 
-  const originalId = src.originalId || src.id;
+  const l = await loadFullLetter(src.id);
+  if(!l) return;
+
+  // Record where it's been before changing it, so the full journey stays visible (one record, full history)
+  l.history = l.history || [];
+  l.history.push({ dept:l.dept, officer:l.assignedOfficer, note:l.minuteNote, at: l.minutedAt || l.createdAt });
+
   const now = Date.now();
-
-  for(let i=0;i<targets.length;i++){
-    const tgt = targets[i];
-    const newId = 'L'+now+'_'+i;
-
-    if(tgt.toSecretary){
-      const newRecord = {
-        id:newId, ref:src.ref, subject:src.subject, sender:src.sender, senderPhone:src.senderPhone||null,
-        date:src.date, notes: note || src.notes, fileData:src.fileData, fileType:src.fileType, fileName:src.fileName,
-        status:'pending', dept:null, assignedOfficer:null, minuteNote:null, minutedAt:null,
-        completed:false, uploadedBy:src.uploadedBy, read:false, createdAt:now, isPriority: src.isPriority||false,
-        extraFiles: src.extraFiles||[], originalId, parentId:src.id, forwardedFromDept: src.dept
-      };
-      await saveFullLetter(newRecord);
-      letterIndex.push({
-        id:newId, ref:src.ref, subject:src.subject, sender:src.sender, senderPhone:src.senderPhone||null, date:src.date,
-        dept:null, assignedOfficer:null, status:'pending', uploadedBy:src.uploadedBy,
-        read:false, createdAt:now, fileType:src.fileType, thumb:src.fileType==='image' ? src.fileData : null,
-        completed:false, isPriority: src.isPriority||false, forwardedFromDept: src.dept
-      });
-    }else{
-      const newRecord = {
-        id:newId, ref:src.ref, subject:src.subject, sender:src.sender, senderPhone:src.senderPhone||null,
-        date:src.date, notes:src.notes, fileData:src.fileData, fileType:src.fileType, fileName:src.fileName,
-        status:'minuted', dept:tgt.dept, assignedOfficer:tgt.officer, minuteNote:note, minutedAt:now,
-        completed:false, uploadedBy:src.uploadedBy, read:false, createdAt:now,
-        originalId, parentId:src.id, forwardedFromDept: src.dept, requiresChairman: src.requiresChairman!==false
-      };
-      await saveFullLetter(newRecord);
-      letterIndex.push({
-        id:newId, ref:src.ref, subject:src.subject, sender:src.sender, senderPhone:src.senderPhone||null, date:src.date,
-        dept:tgt.dept, assignedOfficer:tgt.officer, status:'minuted', uploadedBy:src.uploadedBy,
-        read:false, createdAt:now, fileType:src.fileType, thumb:src.fileType==='image' ? src.fileData : null,
-        completed:false, forwardedFromDept: src.dept, requiresChairman: src.requiresChairman!==false
-      });
-    }
+  if(toSecretary){
+    l.status = 'pending';
+    l.dept = null;
+    l.assignedOfficer = null;
+    l.minuteNote = null;
+    l.minutedAt = null;
+  }else{
+    l.status = 'minuted';
+    l.dept = dept;
+    l.assignedOfficer = officer;
+    l.minuteNote = note;
+    l.minutedAt = now;
   }
+  l.read = false;
+  l.completed = false;
+  l.completedAt = null;
+  l.completedByName = null;
+  l.approvals = { secretary:null, chairman:null };
+  l.finalApproved = false;
 
-  // Mark the source copy as forwarded onward (kept for history, no longer actionable there)
-  src.forwarded = true;
-  await saveFullLetter(src);
-  updateIndexEntry(src.id, { forwarded:true });
+  await saveFullLetter(l);
+  updateIndexEntry(l.id, {
+    status: l.status, dept: l.dept, assignedOfficer: l.assignedOfficer, read:false,
+    completed:false, finalApproved:false, minutedAt: l.minutedAt
+  });
   await saveIndex();
 
   closeForwardModal();
